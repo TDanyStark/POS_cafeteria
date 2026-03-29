@@ -2,23 +2,26 @@
 
 declare(strict_types=1);
 
+use App\Application\Actions\Auth\LoginAction;
+use App\Application\Actions\Auth\MeAction;
+use App\Application\Middleware\JwtMiddleware;
+use App\Application\Middleware\RoleMiddleware;
+use App\Domain\Services\AuthService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Container\ContainerInterface;
 use Slim\App;
 
 return function (App $app) {
-    // CORS Pre-Flight OPTIONS Request Handler
+    $container = $app->getContainer();
+
     $app->options('/{routes:.*}', function (Request $request, Response $response) {
         return $response;
     });
 
-    // API v1 group
-    $app->group('/api/v1', function (\Slim\Interfaces\RouteCollectorProxyInterface $group) {
+    $app->group('/api/v1', function (\Slim\Interfaces\RouteCollectorProxyInterface $group) use ($container) {
 
-        // Health check — validates DB connection
-        $group->get('/health', function (Request $request, Response $response) {
-            $container = \Slim\Factory\AppFactory::getContainer();
-
+        $group->get('/health', function (Request $request, Response $response) use ($container) {
             try {
                 /** @var PDO $pdo */
                 $pdo = $container->get(PDO::class);
@@ -35,5 +38,10 @@ return function (App $app) {
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus($status);
         });
+
+        $group->post('/auth/login', LoginAction::class);
+
+        $group->get('/auth/me', MeAction::class)
+            ->add(JwtMiddleware::class);
     });
 };

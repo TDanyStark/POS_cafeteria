@@ -28,24 +28,24 @@ Estado general: **EN PROGRESO**
 ---
 
 ## Fase 2 — Autenticación & Usuarios
-**Estado:** [ ] Pendiente  
+**Estado:** [x] Completada  
 **Depende de:** Fase 1
 
 ### Backend
-- [ ] Migración: tabla `users`
-- [ ] Seeder: 1 admin + 2 cajeros de prueba
-- [ ] `LoginAction` — `POST /api/v1/auth/login`
-- [ ] `MeAction` — `GET /api/v1/auth/me`
-- [ ] `JwtMiddleware` — valida token en rutas protegidas
-- [ ] `RoleMiddleware` — restringe acceso por rol (`admin`, `cashier`)
+- [x] Migración: tabla `users`
+- [x] Seeder: 1 admin + 2 cajeros de prueba
+- [x] `LoginAction` — `POST /api/v1/auth/login`
+- [x] `MeAction` — `GET /api/v1/auth/me`
+- [x] `JwtMiddleware` — valida token en rutas protegidas
+- [x] `RoleMiddleware` — restringe acceso por rol (`admin`, `cashier`)
 
 ### Frontend
-- [ ] Página `/login` con formulario (React Hook Form + Shadcn)
-- [ ] `useAuthStore` (Zustand) — token, user, login, logout
-- [ ] `PrivateRoute` — redirige a `/login` si no hay token
-- [ ] `RoleRoute` — redirige si el rol no tiene acceso
-- [ ] Layout principal con sidebar (links según rol)
-- [ ] Types: `User`, `AuthResponse`
+- [x] Página `/login` con formulario (React Hook Form + Shadcn)
+- [x] `useAuthStore` (Zustand) — token, user, login, logout
+- [x] `PrivateRoute` — redirige a `/login` si no hay token
+- [x] `RoleRoute` — redirige si el rol no tiene acceso
+- [x] Layout principal con sidebar (links según rol)
+- [x] Types: `User`, `AuthResponse`
 
 ---
 
