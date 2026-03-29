@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 1. Ignorar la carpeta /api (deja que el servidor entre en ella)
+  RewriteCond %{REQUEST_URI} ^/api/ [NC]
+  RewriteRule ^ - [L]
+
+  # 2. Si el archivo o directorio solicitado NO existe físicamente
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  
+  # 3. Redirigir todo lo demás al index.html de React
+  RewriteRule . /index.html [L]
+</IfModule>
