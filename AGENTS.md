@@ -186,6 +186,45 @@ email_settings   → id, smtp_host, smtp_port, smtp_user, smtp_pass,
 
 ---
 
+## Dark Mode
+
+El proyecto tiene soporte completo de dark mode con tres modos: `light`, `dark` y `system` (predeterminado).
+
+### Arquitectura
+- **Tailwind v4:** `@custom-variant dark (&:is(.dark *))` para el toggle manual con clase `.dark` en `<html>`.
+- **Sistema por defecto:** `@media (prefers-color-scheme: dark)` en `index.css` aplica las variables cuando `<html>` no tiene `.light` ni `.dark`.
+- **`useTheme` hook** (`src/hooks/useTheme.ts`): gestiona el estado del tema, persiste en `localStorage` (`pos-theme`), escucha cambios del sistema cuando está en modo `system`.
+- **`ThemeProvider`** (`src/components/shared/ThemeProvider.tsx`): provee el contexto del tema a toda la app. Está montado en `main.tsx` como el wrapper más externo.
+
+### Lógica de clases en `<html>`
+| Modo seleccionado | Clase en `<html>` | CSS activo |
+|-------------------|--------------------|------------|
+| `system` (default) | ninguna | `prefers-color-scheme` del SO |
+| `light` | `.light` | Variables `:root` (light) |
+| `dark` | `.dark` | Variables `.dark` block |
+
+### Reglas para los agentes
+- **Todas las vistas DEBEN tener soporte dark mode.** Usar siempre las variables semánticas de Shadcn (`bg-background`, `text-foreground`, `bg-card`, `text-muted-foreground`, etc.), NUNCA colores hardcodeados como `bg-white` o `text-gray-900`.
+- Si necesitas un color que cambie con el tema, usa `dark:` variant: `className="bg-white dark:bg-gray-900"`.
+- Para toggle de tema en la UI (botón en el header/sidebar), usar `useThemeContext()` del `ThemeProvider`.
+- **No usar** `document.documentElement.classList` directamente — siempre via el hook `useTheme` o `useThemeContext`.
+
+### Ejemplo de uso del toggle
+```tsx
+import { useThemeContext } from '@/components/shared/ThemeProvider'
+
+function ThemeToggle() {
+  const { theme, setTheme } = useThemeContext()
+  return (
+    <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+      {theme === 'dark' ? 'Claro' : 'Oscuro'}
+    </button>
+  )
+}
+```
+
+---
+
 ## Convenciones (resumen rápido)
 
 - **Rutas API:** siempre `/api/v1/...` en plural y `kebab-case`
@@ -198,3 +237,4 @@ email_settings   → id, smtp_host, smtp_port, smtp_user, smtp_pass,
 - **Paginación:** obligatoria en todos los endpoints que retornen colecciones
 - **Errores backend:** siempre `{ "success": false, "message": "...", "errors": {} }`
 - **Feedback UI:** solo Toast/Notificaciones de Shadcn, nunca `alert()`
+- **Dark mode:** siempre usar variables semánticas Shadcn, nunca colores hardcodeados

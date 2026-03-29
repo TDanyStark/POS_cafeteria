@@ -47,17 +47,17 @@ export function AppLayout() {
   const navItems = user?.role === 'admin' ? adminNavItems : cashierNavItems
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-background">
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-200 ease-in-out lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 w-64 bg-card shadow-lg transform transition-transform duration-200 ease-in-out lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center gap-2 px-6 py-5 border-b">
             <Coffee className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-gray-900">Cafetería</span>
+            <span className="text-xl font-bold text-foreground">Cafetería</span>
           </div>
 
           <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
@@ -74,7 +74,7 @@ export function AppLayout() {
                     'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                     isActive
                       ? 'bg-primary text-primary-foreground'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   )}
                 >
                   <Icon className="h-5 w-5" />
@@ -86,10 +86,10 @@ export function AppLayout() {
 
           <div className="border-t p-4">
             <div className="mb-3 px-3">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-medium text-foreground truncate">
                 {user?.name}
               </p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+              <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
             </div>
             <Button
               variant="outline"
@@ -104,7 +104,7 @@ export function AppLayout() {
       </aside>
 
       <div className="flex-1 lg:ml-64">
-        <header className="sticky top-0 z-40 bg-white border-b px-4 py-3 lg:hidden">
+        <header className="sticky top-0 z-40 bg-card border-b px-4 py-3 lg:hidden">
           <Button
             variant="ghost"
             size="icon"
