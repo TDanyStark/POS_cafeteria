@@ -8,6 +8,9 @@ final class UserSeeder extends AbstractSeed
 {
     public function run(): void
     {
+        // Truncate to allow idempotent re-seeding
+        $this->getAdapter()->execute('TRUNCATE TABLE users');
+
         $users = [
             [
                 'name' => 'Administrador',

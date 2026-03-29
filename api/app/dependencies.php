@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 use App\Application\Middleware\JwtMiddleware;
 use App\Application\Settings\SettingsInterface;
+use App\Domain\Repositories\CategoryRepositoryInterface;
+use App\Domain\Repositories\ProductRepositoryInterface;
 use App\Domain\Repositories\UserRepositoryInterface;
 use App\Domain\Services\AuthService;
+use App\Domain\Services\CategoryService;
+use App\Domain\Services\ProductService;
+use App\Infrastructure\Persistence\MySqlCategoryRepository;
+use App\Infrastructure\Persistence\MySqlProductRepository;
 use App\Infrastructure\Persistence\MySqlUserRepository;
 use DI\ContainerBuilder;
 use Monolog\Handler\StreamHandler;
@@ -47,6 +53,7 @@ return function (ContainerBuilder $containerBuilder) {
             ]);
         },
 
+        // User
         UserRepositoryInterface::class => function (ContainerInterface $c) {
             return new MySqlUserRepository($c->get(PDO::class));
         },
@@ -57,6 +64,27 @@ return function (ContainerBuilder $containerBuilder) {
 
         JwtMiddleware::class => function (ContainerInterface $c) {
             return new JwtMiddleware($c->get(AuthService::class));
+        },
+
+        // Category
+        CategoryRepositoryInterface::class => function (ContainerInterface $c) {
+            return new MySqlCategoryRepository($c->get(PDO::class));
+        },
+
+        CategoryService::class => function (ContainerInterface $c) {
+            return new CategoryService($c->get(CategoryRepositoryInterface::class));
+        },
+
+        // Product
+        ProductRepositoryInterface::class => function (ContainerInterface $c) {
+            return new MySqlProductRepository($c->get(PDO::class));
+        },
+
+        ProductService::class => function (ContainerInterface $c) {
+            return new ProductService(
+                $c->get(ProductRepositoryInterface::class),
+                $c->get(CategoryRepositoryInterface::class)
+            );
         },
     ]);
 };

@@ -50,24 +50,24 @@ Estado general: **EN PROGRESO**
 ---
 
 ## Fase 3 — Catálogo (Categorías + Productos)
-**Estado:** [ ] Pendiente  
+**Estado:** [x] Completada  
 **Depende de:** Fase 2
 
 ### Backend
-- [ ] Migración: tabla `categories`
-- [ ] Migración: tabla `products`
-- [ ] Seeder: 5 categorías por defecto (Bebidas, Comidas, Snacks, Postres, Otros)
-- [ ] Seeder: 10 productos distribuidos con stock inicial
-- [ ] CRUD `categories` — `GET/POST/PUT/DELETE /api/v1/categories`
-- [ ] CRUD `products` — `GET/POST/PUT/DELETE /api/v1/products` (paginado, filtros por categoría)
-- [ ] `PATCH /api/v1/products/{id}/stock` — ajuste manual de stock
+- [x] Migración: tabla `categories`
+- [x] Migración: tabla `products`
+- [x] Seeder: 5 categorías por defecto (Bebidas, Comidas, Snacks, Postres, Otros)
+- [x] Seeder: 10 productos distribuidos con stock inicial
+- [x] CRUD `categories` — `GET/POST/PUT/DELETE /api/v1/categories`
+- [x] CRUD `products` — `GET/POST/PUT/DELETE /api/v1/products` (paginado, filtros por categoría)
+- [x] `PATCH /api/v1/products/{id}/stock` — ajuste manual de stock
 
 ### Frontend
-- [ ] Página `/categories` — listado + modal crear/editar/eliminar
-- [ ] Página `/products` — listado paginado con filtros en URL (`?page=&category=&search=`)
-- [ ] Skeleton loaders en listados
-- [ ] Formulario producto con selector de categoría
-- [ ] Types: `Category`, `Product`, `PaginatedResponse`
+- [x] Página `/categories` — listado + modal crear/editar/eliminar
+- [x] Página `/products` — listado paginado con filtros en URL (`?page=&category=&search=`)
+- [x] Skeleton loaders en listados
+- [x] Formulario producto con selector de categoría
+- [x] Types: `Category`, `Product`, `PaginatedResponse`
 
 ---
 
