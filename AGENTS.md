@@ -238,3 +238,15 @@ function ThemeToggle() {
 - **Errores backend:** siempre `{ "success": false, "message": "...", "errors": {} }`
 - **Feedback UI:** solo Toast/Notificaciones de Shadcn, nunca `alert()`
 - **Dark mode:** siempre usar variables semánticas Shadcn, nunca colores hardcodeados
+
+
+## Migraciones:
+
+- **Correr migraciones pendientes**
+`composer migrate`
+
+- **Poblar datos de prueba**
+`composer seed`
+
+- **Reset completo (borrar todo y volver a crear)**
+`composer reset`
