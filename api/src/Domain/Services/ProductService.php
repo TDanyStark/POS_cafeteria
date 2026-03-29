@@ -38,6 +38,7 @@ class ProductService
     public function create(array $data): array
     {
         $this->validateProductData($data);
+        $this->validateCodeUnique($data['code'] ?? null, null);
 
         $id = $this->productRepository->create($data);
 
@@ -52,6 +53,7 @@ class ProductService
         }
 
         $this->validateProductData($data);
+        $this->validateCodeUnique($data['code'] ?? null, $id);
 
         $this->productRepository->update($id, $data);
 
@@ -82,6 +84,18 @@ class ProductService
         $this->productRepository->updateStock($id, $quantity);
 
         return $this->productRepository->findById($id);
+    }
+
+    private function validateCodeUnique(?string $code, ?int $excludeId): void
+    {
+        if ($code === null || $code === '') {
+            return;
+        }
+
+        $existing = $this->productRepository->findByCode($code);
+        if ($existing && (int) $existing['id'] !== $excludeId) {
+            throw new \InvalidArgumentException("Ya existe un producto con el código '{$code}'.");
+        }
     }
 
     private function validateProductData(array $data): void

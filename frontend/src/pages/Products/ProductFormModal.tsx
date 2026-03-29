@@ -1,19 +1,13 @@
 import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
+import { Barcode } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { useCategories } from '@/hooks/useCategories'
+import { CategoryCreatableSelect } from '@/components/shared/CategoryCreatableSelect'
 import { useCreateProduct, useUpdateProduct } from '@/hooks/useProducts'
 import type { Product } from '@/types/catalog'
 
@@ -24,6 +18,7 @@ interface Props {
 }
 
 interface FormValues {
+  code: string
   name: string
   category_id: string
   price: string
@@ -34,7 +29,6 @@ interface FormValues {
 
 export function ProductFormModal({ open, onClose, product }: Props) {
   const isEdit = !!product
-  const { data: categories } = useCategories()
   const createProduct = useCreateProduct()
   const updateProduct = useUpdateProduct()
 
@@ -46,6 +40,7 @@ export function ProductFormModal({ open, onClose, product }: Props) {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     defaultValues: {
+      code: '',
       name: '',
       category_id: '',
       price: '',
@@ -58,6 +53,7 @@ export function ProductFormModal({ open, onClose, product }: Props) {
   useEffect(() => {
     if (open) {
       reset({
+        code: product?.code ?? '',
         name: product?.name ?? '',
         category_id: product?.category_id ? String(product.category_id) : '',
         price: product?.price ? String(product.price) : '',
@@ -70,6 +66,7 @@ export function ProductFormModal({ open, onClose, product }: Props) {
 
   const onSubmit = async (values: FormValues) => {
     const payload = {
+      code: values.code.trim() || null,
       name: values.name,
       category_id: parseInt(values.category_id),
       price: parseFloat(values.price),
@@ -102,6 +99,28 @@ export function ProductFormModal({ open, onClose, product }: Props) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+
+          {/* Código de barras */}
+          <div className="space-y-1.5">
+            <Label htmlFor="code" className="flex items-center gap-1.5">
+              <Barcode className="h-3.5 w-3.5" />
+              Código
+              <span className="text-muted-foreground font-normal">(opcional)</span>
+            </Label>
+            <Input
+              id="code"
+              placeholder="Escanea o escribe el código de barras"
+              autoComplete="off"
+              {...register('code')}
+            />
+            {errors.code && (
+              <p className="text-xs text-destructive">{errors.code.message}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Puedes usar un lector de código de barras — el campo recibe el escaneo directamente.
+            </p>
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="name">Nombre</Label>
             <Input
@@ -114,25 +133,19 @@ export function ProductFormModal({ open, onClose, product }: Props) {
             )}
           </div>
 
+          {/* Categoría — Creatable Select */}
           <div className="space-y-1.5">
             <Label>Categoría</Label>
             <Controller
               name="category_id"
               control={control}
               rules={{ required: 'La categoría es requerida' }}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una categoría" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map((cat) => (
-                      <SelectItem key={cat.id} value={String(cat.id)}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              render={({ field, fieldState }) => (
+                <CategoryCreatableSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  hasError={!!fieldState.error}
+                />
               )}
             />
             {errors.category_id && (
@@ -142,16 +155,16 @@ export function ProductFormModal({ open, onClose, product }: Props) {
 
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="price">Precio</Label>
+              <Label htmlFor="price">Precio (COP)</Label>
               <Input
                 id="price"
                 type="number"
-                step="0.01"
-                min="0.01"
-                placeholder="0.00"
+                step="1"
+                min="1"
+                placeholder="0"
                 {...register('price', {
                   required: 'Requerido',
-                  min: { value: 0.01, message: 'Debe ser > 0' },
+                  min: { value: 1, message: 'Debe ser > 0' },
                 })}
               />
               {errors.price && (

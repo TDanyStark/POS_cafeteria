@@ -20,24 +20,23 @@ class MySqlProductRepository implements ProductRepositoryInterface
         $where  = [];
 
         if ($categoryId !== null) {
-            $where[]              = 'p.category_id = :category_id';
+            $where[]               = 'p.category_id = :category_id';
             $params['category_id'] = $categoryId;
         }
 
         if ($search !== null && $search !== '') {
-            $where[]          = 'p.name LIKE :search';
-            $params['search'] = '%' . $search . '%';
+            // Search by name OR by exact code match
+            $where[]          = '(p.name LIKE :search OR p.code = :code_exact)';
+            $params['search']     = '%' . $search . '%';
+            $params['code_exact'] = $search;
         }
 
         if ($active !== null) {
-            $where[]         = 'p.active = :active';
+            $where[]          = 'p.active = :active';
             $params['active'] = $active ? 1 : 0;
         }
 
         $whereClause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
-
-        $params['limit']  = $perPage;
-        $params['offset'] = $offset;
 
         $sql = "
             SELECT p.*, c.name AS category_name
@@ -50,12 +49,12 @@ class MySqlProductRepository implements ProductRepositoryInterface
 
         $stmt = $this->pdo->prepare($sql);
 
-        // Bind integer params explicitly to avoid PDO treating them as strings
         if (isset($params['category_id'])) {
             $stmt->bindValue(':category_id', $params['category_id'], PDO::PARAM_INT);
         }
         if (isset($params['search'])) {
             $stmt->bindValue(':search', $params['search'], PDO::PARAM_STR);
+            $stmt->bindValue(':code_exact', $params['code_exact'], PDO::PARAM_STR);
         }
         if (isset($params['active'])) {
             $stmt->bindValue(':active', $params['active'], PDO::PARAM_INT);
@@ -73,17 +72,18 @@ class MySqlProductRepository implements ProductRepositoryInterface
         $where  = [];
 
         if ($categoryId !== null) {
-            $where[]              = 'category_id = :category_id';
+            $where[]               = 'category_id = :category_id';
             $params['category_id'] = $categoryId;
         }
 
         if ($search !== null && $search !== '') {
-            $where[]          = 'name LIKE :search';
-            $params['search'] = '%' . $search . '%';
+            $where[]              = '(name LIKE :search OR code = :code_exact)';
+            $params['search']     = '%' . $search . '%';
+            $params['code_exact'] = $search;
         }
 
         if ($active !== null) {
-            $where[]         = 'active = :active';
+            $where[]          = 'active = :active';
             $params['active'] = $active ? 1 : 0;
         }
 
@@ -108,13 +108,27 @@ class MySqlProductRepository implements ProductRepositoryInterface
         return $row ?: null;
     }
 
+    public function findByCode(string $code): ?array
+    {
+        $stmt = $this->pdo->prepare('
+            SELECT p.*, c.name AS category_name
+            FROM products p
+            LEFT JOIN categories c ON c.id = p.category_id
+            WHERE p.code = :code
+        ');
+        $stmt->execute(['code' => $code]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
     public function create(array $data): int
     {
         $stmt = $this->pdo->prepare('
-            INSERT INTO products (category_id, name, price, stock, min_stock, active, created_at, updated_at)
-            VALUES (:category_id, :name, :price, :stock, :min_stock, :active, NOW(), NOW())
+            INSERT INTO products (code, category_id, name, price, stock, min_stock, active, created_at, updated_at)
+            VALUES (:code, :category_id, :name, :price, :stock, :min_stock, :active, NOW(), NOW())
         ');
         $stmt->execute([
+            'code'        => isset($data['code']) && $data['code'] !== '' ? $data['code'] : null,
             'category_id' => $data['category_id'],
             'name'        => $data['name'],
             'price'       => $data['price'],
@@ -129,12 +143,13 @@ class MySqlProductRepository implements ProductRepositoryInterface
     {
         $stmt = $this->pdo->prepare('
             UPDATE products
-            SET category_id = :category_id, name = :name, price = :price,
+            SET code = :code, category_id = :category_id, name = :name, price = :price,
                 stock = :stock, min_stock = :min_stock, active = :active, updated_at = NOW()
             WHERE id = :id
         ');
         return $stmt->execute([
             'id'          => $id,
+            'code'        => isset($data['code']) && $data['code'] !== '' ? $data['code'] : null,
             'category_id' => $data['category_id'],
             'name'        => $data['name'],
             'price'       => $data['price'],

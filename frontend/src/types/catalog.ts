@@ -8,6 +8,7 @@ export interface Category {
 
 export interface Product {
   id: number
+  code?: string | null
   category_id: number
   category_name?: string
   name: string

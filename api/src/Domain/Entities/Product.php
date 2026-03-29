@@ -14,6 +14,7 @@ class Product
         private int $stock,
         private int $minStock,
         private bool $active,
+        private ?string $code = null,
         private ?string $categoryName = null,
         private ?string $createdAt = null,
         private ?string $updatedAt = null
@@ -26,6 +27,7 @@ class Product
     public function getStock(): int { return $this->stock; }
     public function getMinStock(): int { return $this->minStock; }
     public function isActive(): bool { return $this->active; }
+    public function getCode(): ?string { return $this->code; }
     public function getCategoryName(): ?string { return $this->categoryName; }
     public function getCreatedAt(): ?string { return $this->createdAt; }
     public function getUpdatedAt(): ?string { return $this->updatedAt; }
@@ -34,6 +36,7 @@ class Product
     {
         return [
             'id'            => $this->id,
+            'code'          => $this->code,
             'category_id'   => $this->categoryId,
             'category_name' => $this->categoryName,
             'name'          => $this->name,

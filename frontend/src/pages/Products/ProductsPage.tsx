@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Plus, Pencil, Trash2, PackageOpen } from 'lucide-react'
+import { Plus, Pencil, Trash2, PackageOpen, Barcode } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -140,6 +140,7 @@ export function ProductsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Nombre</TableHead>
+              <TableHead>Código</TableHead>
               <TableHead>Categoría</TableHead>
               <TableHead>Precio</TableHead>
               <TableHead>Stock</TableHead>
@@ -152,6 +153,7 @@ export function ProductsPage() {
               Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={i}>
                   <TableCell><Skeleton className="h-4 w-36" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-16" /></TableCell>
@@ -166,6 +168,16 @@ export function ProductsPage() {
                   <TableRow key={product.id}>
                     <TableCell className="font-medium text-foreground">
                       {product.name}
+                    </TableCell>
+                    <TableCell>
+                      {product.code ? (
+                        <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
+                          <Barcode className="h-3.5 w-3.5" />
+                          {product.code}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground/50">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {product.category_name}
@@ -215,7 +227,7 @@ export function ProductsPage() {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   No se encontraron productos
                 </TableCell>
               </TableRow>
