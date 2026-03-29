@@ -145,7 +145,7 @@ export function ProductsPage() {
               <TableHead>Precio</TableHead>
               <TableHead>Stock</TableHead>
               <TableHead>Estado</TableHead>
-              <TableHead className="w-[140px]">Acciones</TableHead>
+              <TableHead className="w-35">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
