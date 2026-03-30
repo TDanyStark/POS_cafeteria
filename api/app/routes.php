@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 use App\Application\Actions\Auth\LoginAction;
 use App\Application\Actions\Auth\MeAction;
+use App\Application\Actions\CashRegisters\AddMovementAction;
+use App\Application\Actions\CashRegisters\CloseCashRegisterAction;
+use App\Application\Actions\CashRegisters\GetActiveCashRegisterAction;
+use App\Application\Actions\CashRegisters\GetCashRegisterAction;
+use App\Application\Actions\CashRegisters\OpenCashRegisterAction;
 use App\Application\Actions\Categories\CreateCategoryAction;
 use App\Application\Actions\Categories\DeleteCategoryAction;
 use App\Application\Actions\Categories\ListCategoriesAction;
@@ -87,6 +92,22 @@ return function (App $app) {
 
         $group->patch('/products/{id}/stock', UpdateProductStockAction::class)
             ->add(new RoleMiddleware(['admin']))
+            ->add(JwtMiddleware::class);
+
+        // Cash Registers (admin + cashier)
+        $group->post('/cash-registers/open', OpenCashRegisterAction::class)
+            ->add(JwtMiddleware::class);
+
+        $group->post('/cash-registers/{id}/close', CloseCashRegisterAction::class)
+            ->add(JwtMiddleware::class);
+
+        $group->get('/cash-registers/active', GetActiveCashRegisterAction::class)
+            ->add(JwtMiddleware::class);
+
+        $group->get('/cash-registers/{id}', GetCashRegisterAction::class)
+            ->add(JwtMiddleware::class);
+
+        $group->post('/cash-registers/{id}/movements', AddMovementAction::class)
             ->add(JwtMiddleware::class);
     });
 };

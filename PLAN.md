@@ -72,26 +72,26 @@ Estado general: **EN PROGRESO**
 ---
 
 ## Fase 4 — Gestión de Caja
-**Estado:** [ ] Pendiente  
+**Estado:** [x] Completada  
 **Depende de:** Fase 2
 
 ### Backend
-- [ ] Migración: tabla `cash_registers`
-- [ ] Migración: tabla `cash_movements`
-- [ ] `POST /api/v1/cash-registers/open` — valida si hay caja anterior sin cerrar → `409`
-- [ ] `POST /api/v1/cash-registers/{id}/close` — calcula saldo esperado vs declarado, guarda diferencia
-- [ ] `GET /api/v1/cash-registers/active` — retorna caja abierta del usuario actual
-- [ ] `GET /api/v1/cash-registers/{id}` — detalle con movimientos
-- [ ] `POST /api/v1/cash-registers/{id}/movements` — registrar entrada/salida manual
-- [ ] `CashRegisterMiddleware` — verifica caja abierta antes de procesar ventas
+- [x] Migración: tabla `cash_registers`
+- [x] Migración: tabla `cash_movements`
+- [x] `POST /api/v1/cash-registers/open` — valida si hay caja anterior sin cerrar → `409`
+- [x] `POST /api/v1/cash-registers/{id}/close` — calcula saldo esperado vs declarado, guarda diferencia
+- [x] `GET /api/v1/cash-registers/active` — retorna caja abierta del usuario actual
+- [x] `GET /api/v1/cash-registers/{id}` — detalle con movimientos
+- [x] `POST /api/v1/cash-registers/{id}/movements` — registrar entrada/salida manual
+- [x] `CashRegisterMiddleware` — verifica caja abierta antes de procesar ventas
 
 ### Frontend
-- [ ] Página `/cash-register`:
+- [x] Página `/cash-register`:
   - Vista "Sin caja abierta" → formulario de apertura con saldo inicial
   - Vista "Caja abierta" → resumen del turno, movimientos, botón cierre
   - Vista "Cerrar caja" → formulario con monto declarado + resumen diferencia
-- [ ] Guard: si hay caja anterior sin cerrar, mostrar modal de cierre forzado antes de abrir
-- [ ] Types: `CashRegister`, `CashMovement`
+- [x] Guard: si hay caja anterior sin cerrar, mostrar modal de cierre forzado antes de abrir
+- [x] Types: `CashRegister`, `CashMovement`
 
 ---
 

@@ -5,6 +5,7 @@ import { AppLayout } from '@/components/shared/AppLayout'
 import { LoginPage } from '@/pages/Login/LoginPage'
 import { CategoriesPage } from '@/pages/Categories/CategoriesPage'
 import { ProductsPage } from '@/pages/Products/ProductsPage'
+import { CashRegisterPage } from '@/pages/CashRegister/CashRegisterPage'
 
 function App() {
   return (
@@ -17,7 +18,7 @@ function App() {
 
           <Route element={<RoleRoute allowedRoles={['admin', 'cashier']} />}>
             <Route path="/pos" element={<div className="text-lg font-medium">POS - Fase 5</div>} />
-            <Route path="/cash-register" element={<div className="text-lg font-medium">Caja - Fase 4</div>} />
+            <Route path="/cash-register" element={<CashRegisterPage />} />
             <Route path="/sales" element={<div className="text-lg font-medium">Ventas - Fase 5</div>} />
           </Route>
 

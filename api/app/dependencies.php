@@ -2,14 +2,18 @@
 
 declare(strict_types=1);
 
+use App\Application\Middleware\CashRegisterMiddleware;
 use App\Application\Middleware\JwtMiddleware;
 use App\Application\Settings\SettingsInterface;
+use App\Domain\Repositories\CashRegisterRepositoryInterface;
 use App\Domain\Repositories\CategoryRepositoryInterface;
 use App\Domain\Repositories\ProductRepositoryInterface;
 use App\Domain\Repositories\UserRepositoryInterface;
 use App\Domain\Services\AuthService;
+use App\Domain\Services\CashRegisterService;
 use App\Domain\Services\CategoryService;
 use App\Domain\Services\ProductService;
+use App\Infrastructure\Persistence\MySqlCashRegisterRepository;
 use App\Infrastructure\Persistence\MySqlCategoryRepository;
 use App\Infrastructure\Persistence\MySqlProductRepository;
 use App\Infrastructure\Persistence\MySqlUserRepository;
@@ -19,6 +23,7 @@ use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Slim\Psr7\Factory\ResponseFactory;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
@@ -84,6 +89,22 @@ return function (ContainerBuilder $containerBuilder) {
             return new ProductService(
                 $c->get(ProductRepositoryInterface::class),
                 $c->get(CategoryRepositoryInterface::class)
+            );
+        },
+
+        // Cash Register
+        CashRegisterRepositoryInterface::class => function (ContainerInterface $c) {
+            return new MySqlCashRegisterRepository($c->get(PDO::class));
+        },
+
+        CashRegisterService::class => function (ContainerInterface $c) {
+            return new CashRegisterService($c->get(CashRegisterRepositoryInterface::class));
+        },
+
+        CashRegisterMiddleware::class => function (ContainerInterface $c) {
+            return new CashRegisterMiddleware(
+                $c->get(CashRegisterRepositoryInterface::class),
+                new ResponseFactory()
             );
         },
     ]);
