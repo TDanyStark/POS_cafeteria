@@ -13,22 +13,26 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { useCustomers, useCreateCustomer } from '@/hooks/useCustomers'
-import { Search, UserPlus, Mail, Phone } from 'lucide-react'
+import { useCustomers, useCreateCustomer, useUpdateCustomer } from '@/hooks/useCustomers'
+import { Search, UserPlus, Mail, Phone, Edit2 } from 'lucide-react'
 import { toast } from 'sonner'
+import type { Customer } from '@/types/sales'
 
 export function CustomersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [showNewModal, setShowNewModal] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
   const [newName, setNewName] = useState('')
   const [newPhone, setNewPhone] = useState('')
   const [newEmail, setNewEmail] = useState('')
+  const [emailError, setEmailError] = useState('')
 
   const page   = parseInt(searchParams.get('page') ?? '1')
   const search = searchParams.get('search') ?? ''
 
   const { data, isLoading } = useCustomers({ page, limit: 20, search })
   const createCustomer = useCreateCustomer()
+  const updateCustomer = useUpdateCustomer()
 
   const setParam = (key: string, value: string) => {
     setSearchParams((prev) => {
@@ -51,24 +55,65 @@ export function CustomersPage() {
     })
   }
 
-  const handleCreate = async () => {
-    if (!newName.trim() || !newPhone.trim()) {
-      toast.error('Nombre y teléfono son requeridos')
-      return
-    }
-    try {
-      await createCustomer.mutateAsync({
-        name: newName.trim(),
-        phone: newPhone.trim(),
-        email: newEmail.trim() || null,
-      })
-      toast.success('Cliente registrado')
-      setShowNewModal(false)
+  const handleOpenModal = (customer?: Customer) => {
+    setEmailError('')
+    if (customer) {
+      setEditingCustomer(customer)
+      setNewName(customer.name)
+      setNewPhone(customer.phone || '')
+      setNewEmail(customer.email || '')
+    } else {
+      setEditingCustomer(null)
       setNewName('')
       setNewPhone('')
       setNewEmail('')
+    }
+    setShowModal(true)
+  }
+
+  const validateEmail = (email: string) => {
+    if (!email) return true
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return regex.test(email)
+  }
+
+  const handleSubmit = async () => {
+    setEmailError('')
+    if (!newName.trim()) {
+      toast.error('El nombre es requerido')
+      return
+    }
+
+    if (newEmail.trim() && !validateEmail(newEmail.trim())) {
+      setEmailError('Ingresa un correo válido')
+      toast.error('El correo electrónico no es válido')
+      return
+    }
+
+    try {
+      if (editingCustomer) {
+        await updateCustomer.mutateAsync({
+          id: editingCustomer.id,
+          name: newName.trim(),
+          phone: newPhone.trim() || '',
+          email: newEmail.trim() || null,
+        })
+        toast.success('Cliente actualizado')
+      } else {
+        if (!newPhone.trim()) {
+          toast.error('El teléfono es requerido para nuevos clientes')
+          return
+        }
+        await createCustomer.mutateAsync({
+          name: newName.trim(),
+          phone: newPhone.trim(),
+          email: newEmail.trim() || null,
+        })
+        toast.success('Cliente registrado')
+      }
+      setShowModal(false)
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al registrar cliente'
+      const msg = err instanceof Error ? err.message : 'Error al guardar cliente'
       toast.error(msg)
     }
   }
@@ -77,7 +122,7 @@ export function CustomersPage() {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Clientes</h1>
-        <Button onClick={() => setShowNewModal(true)}>
+        <Button onClick={() => handleOpenModal()}>
           <UserPlus className="h-4 w-4 mr-2" />
           Nuevo cliente
         </Button>
@@ -104,13 +149,14 @@ export function CustomersPage() {
               <TableHead>Teléfono</TableHead>
               <TableHead>Correo</TableHead>
               <TableHead>Registrado</TableHead>
+              <TableHead className="w-20">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 5 }).map((_, j) => (
+                  {Array.from({ length: 6 }).map((_, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -119,7 +165,7 @@ export function CustomersPage() {
               ))
             ) : data?.data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                   No se encontraron clientes
                 </TableCell>
               </TableRow>
@@ -131,7 +177,7 @@ export function CustomersPage() {
                   <TableCell>
                     <div className="flex items-center gap-1.5 text-sm">
                       <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                      {customer.phone}
+                      {customer.phone || <span className="italic">—</span>}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -146,6 +192,16 @@ export function CustomersPage() {
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(customer.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleOpenModal(customer)}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -179,11 +235,13 @@ export function CustomersPage() {
         </div>
       )}
 
-      {/* New Customer Modal */}
-      <Dialog open={showNewModal} onOpenChange={setShowNewModal}>
+      {/* Customer Modal */}
+      <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Registrar nuevo cliente</DialogTitle>
+            <DialogTitle>
+              {editingCustomer ? 'Editar cliente' : 'Registrar nuevo cliente'}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
@@ -191,18 +249,28 @@ export function CustomersPage() {
               <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nombre completo" />
             </div>
             <div className="space-y-1.5">
-              <Label>Teléfono *</Label>
+              <Label>Teléfono {editingCustomer ? '(opcional)' : '*'}</Label>
               <Input value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="300-000-0000" />
             </div>
             <div className="space-y-1.5">
               <Label>Correo (opcional)</Label>
-              <Input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="correo@ejemplo.com" type="email" />
+              <Input
+                value={newEmail}
+                onChange={(e) => {
+                  setNewEmail(e.target.value)
+                  if (emailError) setEmailError('')
+                }}
+                placeholder="correo@ejemplo.com"
+                type="email"
+                className={emailError ? 'border-destructive' : ''}
+              />
+              {emailError && <p className="text-xs text-destructive">{emailError}</p>}
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewModal(false)}>Cancelar</Button>
-            <Button onClick={handleCreate} disabled={createCustomer.isPending}>
-              {createCustomer.isPending ? 'Guardando...' : 'Registrar'}
+            <Button variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
+            <Button onClick={handleSubmit} disabled={createCustomer.isPending || updateCustomer.isPending}>
+              {createCustomer.isPending || updateCustomer.isPending ? 'Guardando...' : (editingCustomer ? 'Guardar cambios' : 'Registrar')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -32,6 +32,11 @@ interface CustomerRepositoryInterface
     public function create(string $name, ?string $phone, ?string $email): int;
 
     /**
+     * Update an existing customer.
+     */
+    public function update(int $id, string $name, ?string $phone, ?string $email): bool;
+
+    /**
      * Search customers by name or phone (for autocomplete).
      */
     public function search(string $query, int $limit = 10): array;

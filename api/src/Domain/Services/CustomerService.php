@@ -78,6 +78,41 @@ class CustomerService
     }
 
     /**
+     * Update an existing customer.
+     */
+    public function update(int $id, string $name, ?string $phone, ?string $email): array
+    {
+        $customer = $this->customerRepository->findById($id);
+        if ($customer === null) {
+            throw new \InvalidArgumentException('Cliente no encontrado.');
+        }
+
+        $name  = trim($name);
+        $phone = $phone ? trim($phone) : null;
+        $email = $email ? trim($email) : null;
+
+        if (empty($name)) {
+            throw new \InvalidArgumentException('El nombre del cliente es requerido.');
+        }
+
+        if ($email !== null && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException('El correo electrónico no es válido.');
+        }
+
+        // Check if another customer already has this phone
+        if (!empty($phone)) {
+            $existing = $this->customerRepository->findByPhone($phone);
+            if ($existing !== null && (int)$existing['id'] !== $id) {
+                throw new \RuntimeException('Ya existe otro cliente con ese número de teléfono.', 409);
+            }
+        }
+
+        $this->customerRepository->update($id, $name, $phone, $email);
+
+        return $this->customerRepository->findById($id);
+    }
+
+    /**
      * Search customers by name or phone.
      */
     public function search(string $query, int $limit = 10): array

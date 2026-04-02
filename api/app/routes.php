@@ -16,6 +16,7 @@ use App\Application\Actions\Categories\UpdateCategoryAction;
 use App\Application\Actions\Customers\CreateCustomerAction;
 use App\Application\Actions\Customers\GetCustomerAction;
 use App\Application\Actions\Customers\ListCustomersAction;
+use App\Application\Actions\Customers\UpdateCustomerAction;
 use App\Application\Actions\Products\CreateProductAction;
 use App\Application\Actions\Products\DeleteProductAction;
 use App\Application\Actions\Products\ListProductsAction;
@@ -141,6 +142,9 @@ return function (App $app) {
             ->add(JwtMiddleware::class);
 
         $group->post('/customers', CreateCustomerAction::class)
+            ->add(JwtMiddleware::class);
+
+        $group->put('/customers/{id}', UpdateCustomerAction::class)
             ->add(JwtMiddleware::class);
 
         $group->get('/customers/{id}', GetCustomerAction::class)

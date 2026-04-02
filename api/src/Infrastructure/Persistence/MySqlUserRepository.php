@@ -47,8 +47,9 @@ class MySqlUserRepository implements UserRepositoryInterface
         $params = ['role' => 'cashier'];
 
         if ($search !== null && trim($search) !== '') {
-            $where[] = '(name LIKE :search OR email LIKE :search)';
-            $params['search'] = '%' . trim($search) . '%';
+            $where[] = '(name LIKE :search1 OR email LIKE :search2)';
+            $params['search1'] = '%' . trim($search) . '%';
+            $params['search2'] = '%' . trim($search) . '%';
         }
 
         if ($active !== null) {
@@ -79,8 +80,9 @@ class MySqlUserRepository implements UserRepositoryInterface
         $params = ['role' => 'cashier'];
 
         if ($search !== null && trim($search) !== '') {
-            $where[] = '(name LIKE :search OR email LIKE :search)';
-            $params['search'] = '%' . trim($search) . '%';
+            $where[] = '(name LIKE :search1 OR email LIKE :search2)';
+            $params['search1'] = '%' . trim($search) . '%';
+            $params['search2'] = '%' . trim($search) . '%';
         }
 
         if ($active !== null) {

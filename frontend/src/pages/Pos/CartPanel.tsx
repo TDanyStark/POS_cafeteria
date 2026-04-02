@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -33,7 +33,13 @@ export function CartPanel() {
 
   const total = getTotal()
   const change = getChange()
-  const canPay = items.length > 0 && amountPaid >= total
+  const canPay = items.length > 0 && (paymentMethod === 'transfer' ? true : amountPaid >= total)
+
+  useEffect(() => {
+    if (paymentMethod === 'transfer') {
+      setAmountPaid(total)
+    }
+  }, [paymentMethod, total, setAmountPaid])
 
   const handleCheckout = async () => {
     if (!canPay) return
@@ -127,18 +133,20 @@ export function CartPanel() {
               </div>
 
               {/* Amount paid */}
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Monto recibido</Label>
-                <Input
-                  type="number"
-                  min={total}
-                  step="1000"
-                  value={amountPaid || ''}
-                  onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
-                  placeholder={`Mínimo $${total.toLocaleString()}`}
-                  className="h-9"
-                />
-              </div>
+              {paymentMethod === 'cash' && (
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Monto recibido</Label>
+                  <Input
+                    type="number"
+                    min={total}
+                    step="1000"
+                    value={amountPaid || ''}
+                    onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
+                    placeholder={`Mínimo $${total.toLocaleString()}`}
+                    className="h-9"
+                  />
+                </div>
+              )}
 
               {/* Change */}
               {paymentMethod === 'cash' && amountPaid > 0 && (

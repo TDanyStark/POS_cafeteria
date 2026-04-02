@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import AsyncSelect from 'react-select/async'
+import { components, type MenuProps, type GroupBase } from 'react-select'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/stores/cartStore'
-import { UserPlus, X, Search } from 'lucide-react'
+import { UserPlus, X, Search, Edit2 } from 'lucide-react'
 import api from '@/lib/axios'
 import type { PaginatedResponse } from '@/types/catalog'
 import type { Customer } from '@/types/sales'
 import { CustomerFormModal } from './CustomerFormModal'
-import { components, type GroupBase, type MenuProps } from 'react-select'
 
 interface CustomerOption {
   value: number
@@ -19,6 +19,7 @@ export function CustomerSelector() {
   const customer = useCartStore((s) => s.customer)
   const setCustomer = useCartStore((s) => s.setCustomer)
   const [showModal, setShowModal] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const loadOptions = async (inputValue: string) => {
     if (!inputValue || inputValue.length < 1) return []
@@ -47,9 +48,20 @@ export function CustomerSelector() {
     setCustomer(null)
   }
 
-  const handleCreateSuccess = (newCustomer: Customer) => {
-    setCustomer(newCustomer)
+  const handleSuccess = (updatedOrNewCustomer: Customer) => {
+    setCustomer(updatedOrNewCustomer)
     setShowModal(false)
+    setIsEditing(false)
+  }
+
+  const handleCreateNew = () => {
+    setIsEditing(false)
+    setShowModal(true)
+  }
+
+  const handleEdit = () => {
+    setIsEditing(true)
+    setShowModal(true)
   }
 
   // Custom components for react-select to match shadcn/ui
@@ -66,7 +78,7 @@ export function CustomerSelector() {
               onMouseDown={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                setShowModal(true)
+                handleCreateNew()
               }}
             >
               <UserPlus className="h-3.5 w-3.5 mr-2" />
@@ -87,15 +99,33 @@ export function CustomerSelector() {
             {customer.phone || 'Sin teléfono'} {customer.email ? `• ${customer.email}` : ''}
           </p>
         </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-8 w-8 text-muted-foreground hover:text-foreground" 
-          onClick={handleClear}
-          title="Quitar cliente"
-        >
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            onClick={handleEdit}
+            title="Editar cliente"
+          >
+            <Edit2 className="h-3.5 w-3.5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-muted-foreground hover:text-foreground" 
+            onClick={handleClear}
+            title="Quitar cliente"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <CustomerFormModal
+          open={showModal}
+          onOpenChange={setShowModal}
+          onSuccess={handleSuccess}
+          customer={isEditing ? customer : null}
+        />
       </div>
     )
   }
@@ -192,8 +222,10 @@ export function CustomerSelector() {
       <CustomerFormModal
         open={showModal}
         onOpenChange={setShowModal}
-        onSuccess={handleCreateSuccess}
+        onSuccess={handleSuccess}
+        customer={null}
       />
     </div>
   )
 }
+

@@ -36,7 +36,7 @@ class MySqlCustomerRepository implements CustomerRepositoryInterface
         $where  = [];
 
         if ($search !== '') {
-            $where[]          = '(name LIKE :search OR phone LIKE :search OR email LIKE :search)';
+            $where[] = '(name LIKE :search1 OR phone LIKE :search2 OR email LIKE :search3)';
             $params['search'] = '%' . $search . '%';
         }
 
@@ -47,7 +47,9 @@ class MySqlCustomerRepository implements CustomerRepositoryInterface
         $stmt = $this->pdo->prepare($sql);
 
         if (isset($params['search'])) {
-            $stmt->bindValue(':search', $params['search'], PDO::PARAM_STR);
+            $stmt->bindValue(':search1', $params['search'], PDO::PARAM_STR);
+            $stmt->bindValue(':search2', $params['search'], PDO::PARAM_STR);
+            $stmt->bindValue(':search3', $params['search'], PDO::PARAM_STR);
         }
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -62,8 +64,12 @@ class MySqlCustomerRepository implements CustomerRepositoryInterface
         $where  = [];
 
         if ($search !== '') {
-            $where[]          = '(name LIKE :search OR phone LIKE :search OR email LIKE :search)';
-            $params['search'] = '%' . $search . '%';
+            $where[] = '(name LIKE :search1 OR phone LIKE :search2 OR email LIKE :search3)';
+            $params  = [
+                'search1' => '%' . $search . '%',
+                'search2' => '%' . $search . '%',
+                'search3' => '%' . $search . '%',
+            ];
         }
 
         $whereClause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -88,15 +94,33 @@ class MySqlCustomerRepository implements CustomerRepositoryInterface
         return (int) $this->pdo->lastInsertId();
     }
 
+    public function update(int $id, string $name, ?string $phone, ?string $email): bool
+    {
+        $stmt = $this->pdo->prepare('
+            UPDATE customers
+            SET name = :name, phone = :phone, email = :email, updated_at = NOW()
+            WHERE id = :id
+        ');
+        return $stmt->execute([
+            'id'    => $id,
+            'name'  => $name,
+            'phone' => $phone,
+            'email' => $email,
+        ]);
+    }
+
     public function search(string $query, int $limit = 10): array
     {
         $stmt = $this->pdo->prepare('
             SELECT * FROM customers
-            WHERE name LIKE :query OR phone LIKE :query OR email LIKE :query
+            WHERE name LIKE :q1 OR phone LIKE :q2 OR email LIKE :q3
             ORDER BY name ASC
             LIMIT :limit
         ');
-        $stmt->bindValue(':query', '%' . $query . '%', PDO::PARAM_STR);
+        $q = '%' . $query . '%';
+        $stmt->bindValue(':q1', $q, PDO::PARAM_STR);
+        $stmt->bindValue(':q2', $q, PDO::PARAM_STR);
+        $stmt->bindValue(':q3', $q, PDO::PARAM_STR);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll();

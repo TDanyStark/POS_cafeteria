@@ -60,3 +60,18 @@ export function useCreateCustomer() {
     },
   })
 }
+
+export function useUpdateCustomer() {
+  const queryClient = useQueryClient()
+
+  return useMutation<Customer, Error, { id: number; name: string; phone: string; email?: string | null }>({
+    mutationFn: async ({ id, ...payload }) => {
+      const { data } = await api.put<ApiResponse<Customer>>(`/customers/${id}`, payload)
+      return data.data!
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+      queryClient.invalidateQueries({ queryKey: ['customers', variables.id] })
+    },
+  })
+}

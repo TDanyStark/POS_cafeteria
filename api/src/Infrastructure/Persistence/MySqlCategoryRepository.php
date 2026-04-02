@@ -23,8 +23,9 @@ class MySqlCategoryRepository implements CategoryRepositoryInterface
         $params = [];
 
         if ($search !== null && trim($search) !== '') {
-            $where = 'WHERE name LIKE :search OR slug LIKE :search';
-            $params['search'] = '%' . trim($search) . '%';
+            $where = 'WHERE name LIKE :search1 OR slug LIKE :search2';
+            $params['search1'] = '%' . trim($search) . '%';
+            $params['search2'] = '%' . trim($search) . '%';
         }
 
         $sql = "SELECT * FROM categories {$where} ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
@@ -47,8 +48,9 @@ class MySqlCategoryRepository implements CategoryRepositoryInterface
         $params = [];
 
         if ($search !== null && trim($search) !== '') {
-            $where = 'WHERE name LIKE :search OR slug LIKE :search';
-            $params['search'] = '%' . trim($search) . '%';
+            $where = 'WHERE name LIKE :search1 OR slug LIKE :search2';
+            $params['search1'] = '%' . trim($search) . '%';
+            $params['search2'] = '%' . trim($search) . '%';
         }
 
         $sql = "SELECT COUNT(*) FROM categories {$where}";

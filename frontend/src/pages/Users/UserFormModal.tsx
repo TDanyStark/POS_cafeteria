@@ -108,7 +108,7 @@ export function UserFormModal({ open, onClose, user }: UserFormModalProps) {
                 required: 'El correo es requerido',
                 pattern: {
                   value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: 'Ingresa un correo valido',
+                  message: 'Ingresa un correo electrónico válido',
                 },
               })}
             />
