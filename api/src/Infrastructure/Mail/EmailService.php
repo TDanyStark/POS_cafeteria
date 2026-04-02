@@ -33,7 +33,11 @@ class EmailService
         $mail->Body = $this->renderSaleReceiptHtml($sale);
         $mail->AltBody = $this->renderSaleReceiptText($sale);
 
-        $mail->send();
+        try {
+            $mail->send();
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('Error SMTP al enviar comprobante: ' . $e->getMessage(), 500);
+        }
     }
 
     public function queueSaleReceipt(array $sale, callable $onError): void
@@ -59,7 +63,11 @@ class EmailService
         $mail->Subject = 'Correo de prueba - POS Cafeteria';
         $mail->Body = '<h2>Correo de prueba</h2><p>La configuración SMTP está funcionando correctamente.</p>';
         $mail->AltBody = 'Correo de prueba: la configuración SMTP está funcionando correctamente.';
-        $mail->send();
+        try {
+            $mail->send();
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('Error SMTP al enviar correo de prueba: ' . $e->getMessage(), 422);
+        }
     }
 
     private function buildMailer(array $settings): PHPMailer
@@ -72,7 +80,9 @@ class EmailService
             $mail->SMTPAuth = true;
             $mail->Username = (string) $settings['smtp_user'];
             $mail->Password = (string) $settings['smtp_pass'];
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->SMTPSecure = ((int) $settings['smtp_port'] === 465)
+                ? PHPMailer::ENCRYPTION_SMTPS
+                : PHPMailer::ENCRYPTION_STARTTLS;
             $mail->setFrom((string) $settings['smtp_user'], (string) ($settings['from_name'] ?? 'POS Cafeteria'));
             $mail->isHTML(true);
             $mail->CharSet = 'UTF-8';

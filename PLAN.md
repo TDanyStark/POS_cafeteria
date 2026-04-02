@@ -171,19 +171,19 @@ Estado general: **EN PROGRESO**
 ---
 
 ## Fase 8 — Gestión de Usuarios (Admin)
-**Estado:** [ ] Pendiente  
+**Estado:** [x] Completada  
 **Depende de:** Fase 2
 
 ### Backend
-- [ ] `GET /api/v1/users` — paginado (solo admin via RoleMiddleware)
-- [ ] `POST /api/v1/users` — crear cajero
-- [ ] `PUT /api/v1/users/{id}` — editar datos / activar / desactivar
-- [ ] `DELETE /api/v1/users/{id}` — eliminar cajero
+- [x] `GET /api/v1/users` — paginado (solo admin via RoleMiddleware)
+- [x] `POST /api/v1/users` — crear cajero
+- [x] `PUT /api/v1/users/{id}` — editar datos / activar / desactivar
+- [x] `DELETE /api/v1/users/{id}` — eliminar cajero
 
 ### Frontend
-- [ ] Página `/users` — listado paginado de cajeros
-- [ ] Modal crear/editar cajero (nombre, email, contraseña, activo)
-- [ ] Solo visible en sidebar para rol `admin`
+- [x] Página `/users` — listado paginado de cajeros
+- [x] Modal crear/editar cajero (nombre, email, contraseña, activo)
+- [x] Solo visible en sidebar para rol `admin`
 
 ---
 

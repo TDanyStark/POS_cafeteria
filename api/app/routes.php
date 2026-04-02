@@ -30,6 +30,10 @@ use App\Application\Actions\Sales\ListSalesAction;
 use App\Application\Actions\Settings\GetEmailSettingsAction;
 use App\Application\Actions\Settings\SendTestEmailAction;
 use App\Application\Actions\Settings\UpdateEmailSettingsAction;
+use App\Application\Actions\Users\CreateUserAction;
+use App\Application\Actions\Users\DeleteUserAction;
+use App\Application\Actions\Users\ListUsersAction;
+use App\Application\Actions\Users\UpdateUserAction;
 use App\Application\Middleware\JwtMiddleware;
 use App\Application\Middleware\RoleMiddleware;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -164,6 +168,23 @@ return function (App $app) {
             ->add(JwtMiddleware::class);
 
         $group->post('/settings/email/test', SendTestEmailAction::class)
+            ->add(new RoleMiddleware(['admin']))
+            ->add(JwtMiddleware::class);
+
+        // Users (admin only)
+        $group->get('/users', ListUsersAction::class)
+            ->add(new RoleMiddleware(['admin']))
+            ->add(JwtMiddleware::class);
+
+        $group->post('/users', CreateUserAction::class)
+            ->add(new RoleMiddleware(['admin']))
+            ->add(JwtMiddleware::class);
+
+        $group->put('/users/{id}', UpdateUserAction::class)
+            ->add(new RoleMiddleware(['admin']))
+            ->add(JwtMiddleware::class);
+
+        $group->delete('/users/{id}', DeleteUserAction::class)
             ->add(new RoleMiddleware(['admin']))
             ->add(JwtMiddleware::class);
     });

@@ -21,6 +21,7 @@ use App\Domain\Services\EmailSettingsService;
 use App\Domain\Services\ProductService;
 use App\Domain\Services\ReportService;
 use App\Domain\Services\SaleService;
+use App\Domain\Services\UserService;
 use App\Infrastructure\Mail\EmailService;
 use App\Infrastructure\Persistence\MySqlCashRegisterRepository;
 use App\Infrastructure\Persistence\MySqlCategoryRepository;
@@ -78,6 +79,10 @@ return function (ContainerBuilder $containerBuilder) {
 
         AuthService::class => function (ContainerInterface $c) {
             return new AuthService($c->get(UserRepositoryInterface::class));
+        },
+
+        UserService::class => function (ContainerInterface $c) {
+            return new UserService($c->get(UserRepositoryInterface::class));
         },
 
         JwtMiddleware::class => function (ContainerInterface $c) {

@@ -24,7 +24,7 @@ class SendTestEmailAction
             $status = $e->getCode() === 422 ? 422 : 500;
             $payload = ['success' => false, 'message' => $e->getMessage(), 'errors' => []];
         } catch (\Throwable $e) {
-            $payload = ['success' => false, 'message' => 'No fue posible enviar el correo de prueba.', 'errors' => []];
+            $payload = ['success' => false, 'message' => 'No fue posible enviar el correo de prueba: ' . $e->getMessage(), 'errors' => []];
             $status = 500;
         }
 

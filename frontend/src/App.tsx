@@ -12,6 +12,7 @@ import { CustomersPage } from '@/pages/Customers/CustomersPage'
 import { DashboardPage } from '@/pages/Dashboard/DashboardPage'
 import { ReportsPage } from '@/pages/Reports/ReportsPage'
 import { SettingsPage } from '@/pages/Settings/SettingsPage'
+import { UsersPage } from '@/pages/Users/UsersPage'
 
 function App() {
   return (
@@ -33,7 +34,7 @@ function App() {
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/customers" element={<CustomersPage />} />
             <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/users" element={<div className="text-lg font-medium">Usuarios - Fase 8</div>} />
+            <Route path="/users" element={<UsersPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
