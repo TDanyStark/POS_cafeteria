@@ -1,7 +1,9 @@
 param(
     [string]$ConfigPath = "./deploy.config.ps1",
     [switch]$SkipBuild,
-    [switch]$SkipMigrations
+    [switch]$SkipMigrations,
+    [switch]$ApiPartial,
+    [switch]$FrontendOnly
 )
 
 Set-StrictMode -Version Latest
@@ -140,6 +142,10 @@ if (-not $Config) {
     throw "El archivo de configuracion debe definir la variable `$Config."
 }
 
+if ($ApiPartial -and $FrontendOnly) {
+    throw "No puedes usar -ApiPartial y -FrontendOnly al mismo tiempo. Elige solo un modo."
+}
+
 foreach ($key in @('FtpHost','FtpPort','FtpUser','FtpPass','FtpBasePath','SshHost','SshPort','SshUser','SshPass','RemotePublicPath')) {
     if (-not $Config.ContainsKey($key) -or [string]::IsNullOrWhiteSpace([string]$Config[$key])) {
         throw "Falta la configuracion obligatoria: $key"
@@ -167,7 +173,18 @@ if (Test-Path $tmpRoot) {
 New-Item -Path $frontendStage -ItemType Directory -Force | Out-Null
 
 try {
-    if (-not $SkipBuild) {
+    if ($ApiPartial) {
+        Write-Step "Modo rapido API parcial habilitado"
+        Write-Host "   Se subiran solo: api/app, api/database, api/public, api/src"
+        Write-Host "   No se comprimira api completa ni se tocara frontend"
+    }
+    elseif ($FrontendOnly) {
+        Write-Step "Modo rapido Frontend-only habilitado"
+        Write-Host "   Se subira solo frontend/dist y .htaccess en la raiz"
+        Write-Host "   No se tocara /api"
+    }
+
+    if ((-not $SkipBuild) -and (-not $ApiPartial)) {
         Write-Step "Build del frontend"
         Assert-Command -Name npm
         & npm run build --prefix $frontendPath
@@ -177,53 +194,105 @@ try {
     }
 
     $frontendDist = Join-Path $frontendPath "dist"
-    if (-not (Test-Path $frontendDist)) {
+    if ((-not $ApiPartial) -and (-not (Test-Path $frontendDist))) {
         throw "No existe frontend/dist. Ejecuta el build primero."
     }
 
-    Write-Step "Preparar artefactos"
-    Copy-Item -Path (Join-Path $frontendDist "*") -Destination $frontendStage -Recurse -Force
-    Copy-Item -Path $htaccessPath -Destination (Join-Path $frontendStage ".htaccess") -Force
-
-    Compress-Archive -Path $apiPath -DestinationPath $apiZip -CompressionLevel Optimal -Force
+    if ((-not $ApiPartial) -and $FrontendOnly) {
+        Write-Step "Preparar artefactos frontend"
+        Copy-Item -Path (Join-Path $frontendDist "*") -Destination $frontendStage -Recurse -Force
+        Copy-Item -Path $htaccessPath -Destination (Join-Path $frontendStage ".htaccess") -Force
+    }
+    elseif (-not $ApiPartial) {
+        Write-Step "Preparar artefactos"
+        Copy-Item -Path (Join-Path $frontendDist "*") -Destination $frontendStage -Recurse -Force
+        Copy-Item -Path $htaccessPath -Destination (Join-Path $frontendStage ".htaccess") -Force
+        Compress-Archive -Path $apiPath -DestinationPath $apiZip -CompressionLevel Optimal -Force
+    }
 
     $plink = (Get-Command plink.exe -ErrorAction SilentlyContinue)
     if (-not $plink) {
         throw "No se encontro plink.exe (PuTTY). Instala PuTTY y agrega plink al PATH para ejecutar comandos SSH con password."
     }
 
-    Write-Step "Limpiar carpeta remota y respaldar api/.env"
-    $keepEntries = @()
-    if ($Config.ContainsKey('KeepEntries') -and $Config.KeepEntries) {
-        $keepEntries = @($Config.KeepEntries)
-    }
-
-    $keepPatternParts = @("'.'", "'..'", "'.deploy_backup'")
-    foreach ($entry in $keepEntries) {
-        $keepPatternParts += "'$entry'"
-    }
-
-    $keepCase = ($keepPatternParts -join '|')
     $remotePath = $Config.RemotePublicPath
-
-    $cleanupScript = "mkdir -p '$remotePath/.deploy_backup'; if [ -f '$remotePath/api/.env' ]; then cp '$remotePath/api/.env' '$remotePath/.deploy_backup/api.env'; fi; for entry in '$remotePath'/* '$remotePath'/.[!.]* '$remotePath'/..?*; do [ -e `"`$entry`" ] || continue; name=`$(basename `"`$entry`" ); case `"`$name`" in $keepCase) continue ;; esac; rm -rf `"`$entry`"; done"
-    Invoke-Plink -PlinkPath $plink.Source -Config $Config -Script $cleanupScript
-
-    Write-Step "Subir frontend y api.zip por FTP"
     $credential = New-Object System.Net.NetworkCredential($Config.FtpUser, $Config.FtpPass)
     $ftpRootUri = "ftp://{0}:{1}{2}" -f $Config.FtpHost, $Config.FtpPort, $Config.FtpBasePath.TrimEnd('/')
 
-    $rootCache = @{}
-    $rootCache[$ftpRootUri] = $true
-    Ensure-FtpDirectory -DirectoryUri "$ftpRootUri" -Credential $credential -CreatedDirectories $rootCache
-    Upload-FtpTree -LocalRoot $frontendStage -RemoteRootUri $ftpRootUri -Credential $credential
-    Upload-FtpFile -LocalFile $apiZip -RemoteUri "$ftpRootUri/api.zip" -Credential $credential
+    if ($ApiPartial) {
+        Write-Step "Limpiar solo carpetas API parciales en servidor"
+        $partialCleanupScript = "cd '$remotePath'; mkdir -p api; rm -rf api/app api/database api/public api/src; mkdir -p api/app api/database api/public api/src"
+        Invoke-Plink -PlinkPath $plink.Source -Config $Config -Script $partialCleanupScript
 
-    Write-Step "Descomprimir backend y restaurar api/.env"
-    $extractScript = "cd '$remotePath'; unzip -oq api.zip -d '$remotePath'; rm -f api.zip; if [ -f '$remotePath/.deploy_backup/api.env' ]; then mkdir -p '$remotePath/api'; cp '$remotePath/.deploy_backup/api.env' '$remotePath/api/.env'; fi"
-    Invoke-Plink -PlinkPath $plink.Source -Config $Config -Script $extractScript
+        Write-Step "Subir solo carpetas API parciales por FTP"
+        $apiRootUri = "$ftpRootUri/api"
+        $cache = @{}
+        $cache[$ftpRootUri] = $true
+        $cache[$apiRootUri] = $true
+        Ensure-FtpDirectory -DirectoryUri $apiRootUri -Credential $credential -CreatedDirectories $cache
 
-    if (-not $SkipMigrations) {
+        foreach ($folder in @('app','database','public','src')) {
+            $localFolder = Join-Path $apiPath $folder
+            if (-not (Test-Path $localFolder)) {
+                throw "No existe la carpeta local requerida para modo parcial: $localFolder"
+            }
+
+            $remoteFolderUri = "$apiRootUri/$folder"
+            Ensure-FtpDirectory -DirectoryUri $remoteFolderUri -Credential $credential -CreatedDirectories $cache
+            Upload-FtpTree -LocalRoot $localFolder -RemoteRootUri $remoteFolderUri -Credential $credential
+        }
+    }
+    elseif ($FrontendOnly) {
+        Write-Step "Limpiar raiz remota (sin tocar /api)"
+        $keepEntries = @('api', '.deploy_backup')
+        if ($Config.ContainsKey('KeepEntries') -and $Config.KeepEntries) {
+            $keepEntries += @($Config.KeepEntries)
+        }
+
+        $keepPatternParts = @("'.'", "'..'")
+        foreach ($entry in $keepEntries) {
+            $keepPatternParts += "'$entry'"
+        }
+
+        $keepCase = ($keepPatternParts -join '|')
+        $frontendCleanupScript = "for entry in '$remotePath'/* '$remotePath'/.[!.]* '$remotePath'/..?*; do [ -e `"`$entry`" ] || continue; name=`$(basename `"`$entry`" ); case `"`$name`" in $keepCase) continue ;; esac; rm -rf `"`$entry`"; done"
+        Invoke-Plink -PlinkPath $plink.Source -Config $Config -Script $frontendCleanupScript
+
+        Write-Step "Subir solo frontend por FTP"
+        $rootCache = @{}
+        $rootCache[$ftpRootUri] = $true
+        Ensure-FtpDirectory -DirectoryUri "$ftpRootUri" -Credential $credential -CreatedDirectories $rootCache
+        Upload-FtpTree -LocalRoot $frontendStage -RemoteRootUri $ftpRootUri -Credential $credential
+    }
+    else {
+        Write-Step "Limpiar carpeta remota y respaldar api/.env"
+        $keepEntries = @()
+        if ($Config.ContainsKey('KeepEntries') -and $Config.KeepEntries) {
+            $keepEntries = @($Config.KeepEntries)
+        }
+
+        $keepPatternParts = @("'.'", "'..'", "'.deploy_backup'")
+        foreach ($entry in $keepEntries) {
+            $keepPatternParts += "'$entry'"
+        }
+
+        $keepCase = ($keepPatternParts -join '|')
+        $cleanupScript = "mkdir -p '$remotePath/.deploy_backup'; if [ -f '$remotePath/api/.env' ]; then cp '$remotePath/api/.env' '$remotePath/.deploy_backup/api.env'; fi; for entry in '$remotePath'/* '$remotePath'/.[!.]* '$remotePath'/..?*; do [ -e `"`$entry`" ] || continue; name=`$(basename `"`$entry`" ); case `"`$name`" in $keepCase) continue ;; esac; rm -rf `"`$entry`"; done"
+        Invoke-Plink -PlinkPath $plink.Source -Config $Config -Script $cleanupScript
+
+        Write-Step "Subir frontend y api.zip por FTP"
+        $rootCache = @{}
+        $rootCache[$ftpRootUri] = $true
+        Ensure-FtpDirectory -DirectoryUri "$ftpRootUri" -Credential $credential -CreatedDirectories $rootCache
+        Upload-FtpTree -LocalRoot $frontendStage -RemoteRootUri $ftpRootUri -Credential $credential
+        Upload-FtpFile -LocalFile $apiZip -RemoteUri "$ftpRootUri/api.zip" -Credential $credential
+
+        Write-Step "Descomprimir backend y restaurar api/.env"
+        $extractScript = "cd '$remotePath'; unzip -oq api.zip -d '$remotePath'; rm -f api.zip; if [ -f '$remotePath/.deploy_backup/api.env' ]; then mkdir -p '$remotePath/api'; cp '$remotePath/.deploy_backup/api.env' '$remotePath/api/.env'; fi"
+        Invoke-Plink -PlinkPath $plink.Source -Config $Config -Script $extractScript
+    }
+
+    if ((-not $SkipMigrations) -and (-not $FrontendOnly)) {
         Write-Step "Ejecutar migraciones y seeders"
         $migrateScript = "cd '$remotePath/api'; php vendor/bin/phinx migrate -e production; php vendor/bin/phinx seed:run -e production"
         Invoke-Plink -PlinkPath $plink.Source -Config $Config -Script $migrateScript
