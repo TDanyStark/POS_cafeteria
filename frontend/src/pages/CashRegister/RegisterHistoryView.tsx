@@ -1,18 +1,9 @@
-import * as React from 'react'
 import { useState } from 'react'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
-import { es } from 'date-fns/locale'
-import { CalendarIcon, AlertCircle, CheckCircle2, User } from 'lucide-react'
+import { CheckCircle2, AlertCircle, User } from 'lucide-react'
 import type { DateRange } from 'react-day-picker'
 
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import {
   Table,
   TableBody,
@@ -25,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCashRegisterHistory } from '@/hooks/useCashRegister'
 import { formatCurrency, formatDate } from '@/utils/format'
+import { DateRangePicker } from '@/components/shared/DateRangePicker'
 
 export function RegisterHistoryView() {
   const [date, setDate] = useState<DateRange | undefined>({
@@ -47,44 +39,7 @@ export function RegisterHistoryView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  'w-[280px] justify-start text-left font-normal',
-                  !date && 'text-muted-foreground'
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date?.from ? (
-                  date.to ? (
-                    <>
-                      {format(date.from, 'LLL dd, y', { locale: es })} -{' '}
-                      {format(date.to, 'LLL dd, y', { locale: es })}
-                    </>
-                  ) : (
-                    format(date.from, 'LLL dd, y', { locale: es })
-                  )
-                ) : (
-                  <span>Selecciona un rango</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={date?.from}
-                selected={date}
-                onSelect={setDate}
-                numberOfMonths={2}
-                locale={es}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+        <DateRangePicker value={date} onChange={setDate} />
       </div>
 
       <div className="rounded-md border bg-card">

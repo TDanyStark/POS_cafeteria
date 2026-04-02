@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Input } from '@/components/ui/input'
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -15,7 +15,9 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSales } from '@/hooks/useSales'
 import { SaleDetailModal } from './SaleDetailModal'
+import { DateRangePicker } from '@/components/shared/DateRangePicker'
 import type { PaymentMethod, SaleFilters } from '@/types/sales'
+import type { DateRange } from 'react-day-picker'
 import { Eye, RotateCcw } from 'lucide-react'
 
 export function SalesPage() {
@@ -27,6 +29,14 @@ export function SalesPage() {
   const dateTo        = searchParams.get('date_to') ?? ''
   const paymentMethod: PaymentMethod | '' = (searchParams.get('payment_method') || '') as PaymentMethod | ''
 
+  const dateRange: DateRange | undefined = useMemo(() => {
+    if (!dateFrom) return undefined
+    return {
+      from: parseISO(dateFrom),
+      to: dateTo ? parseISO(dateTo) : undefined,
+    }
+  }, [dateFrom, dateTo])
+
   const filters: SaleFilters = {
     page,
     limit: 20,
@@ -36,6 +46,26 @@ export function SalesPage() {
   }
 
   const { data, isLoading } = useSales(filters)
+
+  const handleDateChange = (range: DateRange | undefined) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (range?.from) {
+        next.set('date_from', format(startOfDay(range.from), 'yyyy-MM-dd'))
+      } else {
+        next.delete('date_from')
+      }
+      
+      if (range?.to) {
+        next.set('date_to', format(endOfDay(range.to), 'yyyy-MM-dd'))
+      } else {
+        next.delete('date_to')
+      }
+      
+      next.set('page', '1')
+      return next
+    })
+  }
 
   const setParam = (key: string, value: string | null) => {
     setSearchParams((prev) => {
@@ -66,32 +96,24 @@ export function SalesPage() {
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">Historial de ventas</h1>
+        <p className="text-sm text-muted-foreground">Consulta y filtra las ventas realizadas en el sistema.</p>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 items-end">
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">Desde</p>
-          <Input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setParam('date_from', e.target.value)}
-            className="w-40 h-9"
+      <div className="flex flex-wrap gap-4 items-end bg-card p-4 rounded-lg border">
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-muted-foreground">Rango de fechas</p>
+          <DateRangePicker 
+            value={dateRange} 
+            onChange={handleDateChange}
+            align="start"
           />
         </div>
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">Hasta</p>
-          <Input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setParam('date_to', e.target.value)}
-            className="w-40 h-9"
-          />
-        </div>
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">Método de pago</p>
+
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-muted-foreground">Método de pago</p>
           <Select value={(paymentMethod || 'all') as string} onValueChange={(v) => setParam('payment_method', v === 'all' ? '' : v)}>
             <SelectTrigger className="w-44 h-9">
               <SelectValue placeholder="Todos" />
@@ -103,16 +125,17 @@ export function SalesPage() {
             </SelectContent>
           </Select>
         </div>
+
         {hasFilters && (
           <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9">
-            <RotateCcw className="h-4 w-4 mr-1" />
-            Limpiar
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Limpiar filtros
           </Button>
         )}
       </div>
 
       {/* Table */}
-      <div className="border border-border rounded-lg overflow-hidden">
+      <div className="border border-border rounded-lg overflow-hidden bg-card">
         <Table>
           <TableHeader>
             <TableRow>

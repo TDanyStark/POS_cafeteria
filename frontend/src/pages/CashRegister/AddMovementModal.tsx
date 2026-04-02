@@ -95,8 +95,8 @@ export function AddMovementModal({ open, onClose, registerId }: AddMovementModal
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="in">Entrada (ingreso)</SelectItem>
-                <SelectItem value="out">Salida (egreso)</SelectItem>
+                <SelectItem value="in">Entrada</SelectItem>
+                <SelectItem value="out">Salida</SelectItem>
               </SelectContent>
             </Select>
           </div>
