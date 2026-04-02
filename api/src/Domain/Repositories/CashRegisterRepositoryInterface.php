@@ -7,6 +7,11 @@ namespace App\Domain\Repositories;
 interface CashRegisterRepositoryInterface
 {
     /**
+     * List all cash registers with filters.
+     */
+    public function list(array $filters): array;
+
+    /**
      * Find the currently open cash register for a given user.
      */
     public function findOpenByUserId(int $userId): ?array;

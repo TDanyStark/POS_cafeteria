@@ -13,6 +13,14 @@ class CashRegisterService
     ) {}
 
     /**
+     * List all cash registers with filters.
+     */
+    public function list(array $filters): array
+    {
+        return $this->cashRegisterRepository->list($filters);
+    }
+
+    /**
      * Open a new cash register for the given user.
      * Throws if there is already an open register for this user.
      */

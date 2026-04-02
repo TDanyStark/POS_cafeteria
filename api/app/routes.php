@@ -8,6 +8,7 @@ use App\Application\Actions\CashRegisters\AddMovementAction;
 use App\Application\Actions\CashRegisters\CloseCashRegisterAction;
 use App\Application\Actions\CashRegisters\GetActiveCashRegisterAction;
 use App\Application\Actions\CashRegisters\GetCashRegisterAction;
+use App\Application\Actions\CashRegisters\ListCashRegistersAction;
 use App\Application\Actions\CashRegisters\OpenCashRegisterAction;
 use App\Application\Actions\Categories\CreateCategoryAction;
 use App\Application\Actions\Categories\DeleteCategoryAction;
@@ -113,6 +114,9 @@ return function (App $app) {
 
         // Cash Registers (admin + cashier)
         $group->post('/cash-registers/open', OpenCashRegisterAction::class)
+            ->add(JwtMiddleware::class);
+
+        $group->get('/cash-registers', ListCashRegistersAction::class)
             ->add(JwtMiddleware::class);
 
         $group->post('/cash-registers/{id}/close', CloseCashRegisterAction::class)

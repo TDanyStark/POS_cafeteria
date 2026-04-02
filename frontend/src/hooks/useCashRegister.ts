@@ -79,3 +79,15 @@ export function useAddMovement() {
     },
   })
 }
+
+export function useCashRegisterHistory(filters: { from?: string; to?: string; user_id?: number }) {
+  return useQuery<CashRegister[]>({
+    queryKey: [QUERY_KEY, 'history', filters],
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<CashRegister[]>>('/cash-registers', {
+        params: filters,
+      })
+      return data.data!
+    },
+  })
+}

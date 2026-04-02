@@ -13,6 +13,38 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
         private PDO $pdo
     ) {}
 
+    public function list(array $filters): array
+    {
+        $query = "
+            SELECT cr.*, u.name AS user_name
+            FROM cash_registers cr
+            INNER JOIN users u ON u.id = cr.user_id
+            WHERE 1=1
+        ";
+        $params = [];
+
+        if (!empty($filters['from'])) {
+            $query .= " AND DATE(cr.opened_at) >= :from";
+            $params['from'] = $filters['from'];
+        }
+
+        if (!empty($filters['to'])) {
+            $query .= " AND DATE(cr.opened_at) <= :to";
+            $params['to'] = $filters['to'];
+        }
+
+        if (!empty($filters['user_id'])) {
+            $query .= " AND cr.user_id = :user_id";
+            $params['user_id'] = $filters['user_id'];
+        }
+
+        $query .= " ORDER BY cr.opened_at DESC";
+
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
     public function findOpenByUserId(int $userId): ?array
     {
         $stmt = $this->pdo->prepare("
