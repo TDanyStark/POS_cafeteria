@@ -92,7 +92,9 @@ export function AddMovementModal({ open, onClose, registerId }: AddMovementModal
               onValueChange={(v) => setValue('type', v as 'in' | 'out')}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Seleccionar tipo">
+                  {typeValue === 'in' ? 'Entrada' : 'Salida'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="in">Entrada</SelectItem>
