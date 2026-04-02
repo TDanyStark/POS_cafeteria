@@ -11,6 +11,7 @@ import { SalesPage } from '@/pages/Sales/SalesPage'
 import { CustomersPage } from '@/pages/Customers/CustomersPage'
 import { DashboardPage } from '@/pages/Dashboard/DashboardPage'
 import { ReportsPage } from '@/pages/Reports/ReportsPage'
+import { SettingsPage } from '@/pages/Settings/SettingsPage'
 
 function App() {
   return (
@@ -33,7 +34,7 @@ function App() {
             <Route path="/customers" element={<CustomersPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/users" element={<div className="text-lg font-medium">Usuarios - Fase 8</div>} />
-            <Route path="/settings" element={<div className="text-lg font-medium">Configuración - Fase 7</div>} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
       </Route>

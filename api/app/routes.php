@@ -27,6 +27,9 @@ use App\Application\Actions\Reports\TopSellersAction;
 use App\Application\Actions\Sales\CreateSaleAction;
 use App\Application\Actions\Sales\GetSaleAction;
 use App\Application\Actions\Sales\ListSalesAction;
+use App\Application\Actions\Settings\GetEmailSettingsAction;
+use App\Application\Actions\Settings\SendTestEmailAction;
+use App\Application\Actions\Settings\UpdateEmailSettingsAction;
 use App\Application\Middleware\JwtMiddleware;
 use App\Application\Middleware\RoleMiddleware;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -149,6 +152,19 @@ return function (App $app) {
             ->add(JwtMiddleware::class);
 
         $group->get('/reports/stock-alerts', StockAlertsAction::class)
+            ->add(JwtMiddleware::class);
+
+        // Settings (admin only)
+        $group->get('/settings/email', GetEmailSettingsAction::class)
+            ->add(new RoleMiddleware(['admin']))
+            ->add(JwtMiddleware::class);
+
+        $group->put('/settings/email', UpdateEmailSettingsAction::class)
+            ->add(new RoleMiddleware(['admin']))
+            ->add(JwtMiddleware::class);
+
+        $group->post('/settings/email/test', SendTestEmailAction::class)
+            ->add(new RoleMiddleware(['admin']))
             ->add(JwtMiddleware::class);
     });
 };

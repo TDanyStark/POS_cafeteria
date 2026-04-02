@@ -8,6 +8,7 @@ use App\Application\Settings\SettingsInterface;
 use App\Domain\Repositories\CashRegisterRepositoryInterface;
 use App\Domain\Repositories\CategoryRepositoryInterface;
 use App\Domain\Repositories\CustomerRepositoryInterface;
+use App\Domain\Repositories\EmailSettingsRepositoryInterface;
 use App\Domain\Repositories\ProductRepositoryInterface;
 use App\Domain\Repositories\ReportRepositoryInterface;
 use App\Domain\Repositories\SaleRepositoryInterface;
@@ -16,12 +17,15 @@ use App\Domain\Services\AuthService;
 use App\Domain\Services\CashRegisterService;
 use App\Domain\Services\CategoryService;
 use App\Domain\Services\CustomerService;
+use App\Domain\Services\EmailSettingsService;
 use App\Domain\Services\ProductService;
 use App\Domain\Services\ReportService;
 use App\Domain\Services\SaleService;
+use App\Infrastructure\Mail\EmailService;
 use App\Infrastructure\Persistence\MySqlCashRegisterRepository;
 use App\Infrastructure\Persistence\MySqlCategoryRepository;
 use App\Infrastructure\Persistence\MySqlCustomerRepository;
+use App\Infrastructure\Persistence\MySqlEmailSettingsRepository;
 use App\Infrastructure\Persistence\MySqlProductRepository;
 use App\Infrastructure\Persistence\MySqlReportRepository;
 use App\Infrastructure\Persistence\MySqlSaleRepository;
@@ -124,6 +128,19 @@ return function (ContainerBuilder $containerBuilder) {
 
         CustomerService::class => function (ContainerInterface $c) {
             return new CustomerService($c->get(CustomerRepositoryInterface::class));
+        },
+
+        // Email Settings
+        EmailSettingsRepositoryInterface::class => function (ContainerInterface $c) {
+            return new MySqlEmailSettingsRepository($c->get(PDO::class));
+        },
+
+        EmailSettingsService::class => function (ContainerInterface $c) {
+            return new EmailSettingsService($c->get(EmailSettingsRepositoryInterface::class));
+        },
+
+        EmailService::class => function (ContainerInterface $c) {
+            return new EmailService($c->get(EmailSettingsService::class));
         },
 
         // Sale

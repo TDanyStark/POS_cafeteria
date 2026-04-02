@@ -16,11 +16,12 @@ class MySqlSaleRepository implements SaleRepositoryInterface
     public function findById(int $id): ?array
     {
         $stmt = $this->pdo->prepare('
-            SELECT s.*,
-                   u.name  AS cashier_name,
-                   c.name  AS customer_name,
-                   c.phone AS customer_phone,
-                   cr.opened_at AS register_opened_at
+             SELECT s.*,
+                    u.name  AS cashier_name,
+                    c.name  AS customer_name,
+                    c.email AS customer_email,
+                    c.phone AS customer_phone,
+                    cr.opened_at AS register_opened_at
             FROM sales s
             INNER JOIN users u ON u.id = s.user_id
             LEFT  JOIN customers c ON c.id = s.customer_id

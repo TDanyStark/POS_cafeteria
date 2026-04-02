@@ -150,23 +150,23 @@ Estado general: **EN PROGRESO**
 ---
 
 ## Fase 7 — Notificaciones Email
-**Estado:** [ ] Pendiente  
+**Estado:** [x] Completada  
 **Depende de:** Fase 5
 
 ### Backend
-- [ ] Migración: tabla `email_settings`
-- [ ] Seeder: registro vacío por defecto
-- [ ] `EmailService` con PHPMailer + SMTP Hostinger
-- [ ] Template HTML de comprobante de venta
-- [ ] Integración asíncrona en `POST /api/v1/sales` (no bloquea respuesta)
-- [ ] `GET /api/v1/settings/email`
-- [ ] `PUT /api/v1/settings/email`
+- [x] Migración: tabla `email_settings`
+- [x] Seeder: registro vacío por defecto
+- [x] `EmailService` con PHPMailer + SMTP Hostinger
+- [x] Template HTML de comprobante de venta
+- [x] Integración asíncrona en `POST /api/v1/sales` (no bloquea respuesta)
+- [x] `GET /api/v1/settings/email`
+- [x] `PUT /api/v1/settings/email`
 
 ### Frontend
-- [ ] Página `/settings`:
+- [x] Página `/settings`:
   - Formulario SMTP (host, puerto, usuario, contraseña, nombre remitente, correo destino)
   - Botón "Enviar correo de prueba"
-- [ ] Types: `EmailSettings`
+- [x] Types: `EmailSettings`
 
 ---
 
