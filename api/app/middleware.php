@@ -3,11 +3,12 @@
 declare(strict_types=1);
 
 use Slim\App;
-use Slim\Middleware\ContentLengthMiddleware;
 
 return function (App $app) {
+    $responseFactory = $app->getResponseFactory();
+
     // CORS Middleware
-    $app->add(function ($request, $handler) {
+    $app->add(function ($request, $handler) use ($responseFactory) {
         $origin = $request->getHeaderLine('Origin');
         $method = strtoupper($request->getMethod());
 
@@ -22,7 +23,7 @@ return function (App $app) {
         $isOriginAllowed = $origin !== '' && ($allowAnyOrigin || in_array($origin, $allowedOrigins, true));
 
         if ($method === 'OPTIONS') {
-            $response = $app->getResponseFactory()->createResponse(204);
+            $response = $responseFactory->createResponse(204);
         } else {
             $response = $handler->handle($request);
         }
