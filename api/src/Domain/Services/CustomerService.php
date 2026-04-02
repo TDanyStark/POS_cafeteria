@@ -51,27 +51,25 @@ class CustomerService
     /**
      * Create a new customer.
      */
-    public function create(string $name, string $phone, ?string $email): array
+    public function create(string $name, ?string $phone, ?string $email): array
     {
         $name  = trim($name);
-        $phone = trim($phone);
+        $phone = $phone ? trim($phone) : null;
         $email = $email ? trim($email) : null;
 
         if (empty($name)) {
             throw new \InvalidArgumentException('El nombre del cliente es requerido.');
         }
 
-        if (empty($phone)) {
-            throw new \InvalidArgumentException('El teléfono del cliente es requerido.');
-        }
-
         if ($email !== null && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('El correo electrónico no es válido.');
         }
 
-        $existing = $this->customerRepository->findByPhone($phone);
-        if ($existing !== null) {
-            throw new \RuntimeException('Ya existe un cliente con ese número de teléfono.', 409);
+        if (!empty($phone)) {
+            $existing = $this->customerRepository->findByPhone($phone);
+            if ($existing !== null) {
+                throw new \RuntimeException('Ya existe un cliente con ese número de teléfono.', 409);
+            }
         }
 
         $id = $this->customerRepository->create($name, $phone, $email);

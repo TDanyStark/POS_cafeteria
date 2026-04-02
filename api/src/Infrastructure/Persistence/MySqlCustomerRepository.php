@@ -74,7 +74,7 @@ class MySqlCustomerRepository implements CustomerRepositoryInterface
         return (int) $stmt->fetchColumn();
     }
 
-    public function create(string $name, string $phone, ?string $email): int
+    public function create(string $name, ?string $phone, ?string $email): int
     {
         $stmt = $this->pdo->prepare('
             INSERT INTO customers (name, phone, email, created_at, updated_at)
@@ -92,7 +92,7 @@ class MySqlCustomerRepository implements CustomerRepositoryInterface
     {
         $stmt = $this->pdo->prepare('
             SELECT * FROM customers
-            WHERE name LIKE :query OR phone LIKE :query
+            WHERE name LIKE :query OR phone LIKE :query OR email LIKE :query
             ORDER BY name ASC
             LIMIT :limit
         ');

@@ -60,6 +60,9 @@ POS_cafeteria/
         ├── components/
         │   └── shared/           # Componentes reutilizables
         ├── pages/                # Una carpeta por página
+        │   └── Pos/
+        │       ├── CustomerSelector.tsx
+        │       └── CustomerFormModal.tsx
         ├── hooks/                # Custom hooks (useXxx.ts)
         ├── stores/               # Zustand stores
         ├── types/                # Interfaces TypeScript (espejo del backend)
@@ -75,7 +78,7 @@ POS_cafeteria/
 users            → id, name, email, password, role (admin|cashier), active, timestamps
 categories       → id, name, slug, timestamps
 products         → id, category_id, name, price, stock, min_stock, active, timestamps
-customers        → id, name, phone, email(nullable), timestamps
+customers        → id, name, phone(nullable), email(nullable), timestamps
 
 cash_registers   → id, user_id, opened_at, closed_at, initial_amount, final_amount,
                    declared_amount, difference, status (open|closed), timestamps
@@ -138,7 +141,7 @@ email_settings   → id, smtp_host, smtp_port, smtp_user, smtp_pass,
 |------|-------------|--------|
 | `/login` | Autenticación | Público |
 | `/dashboard` | Resumen del día, stock bajo, últimas ventas | Admin + Cajero |
-| `/pos` | Fast Checkout — interfaz de venta rápida | Admin + Cajero |
+| `/pos` | Fast Checkout — interfaz de venta rápida (con `CustomerSelector` y `CustomerFormModal`) | Admin + Cajero |
 | `/cash-register` | Apertura, movimientos y cierre de caja | Admin + Cajero |
 | `/sales` | Historial de ventas con filtros | Admin + Cajero |
 | `/products` | Gestión de catálogo y stock | Admin |
@@ -163,6 +166,11 @@ email_settings   → id, smtp_host, smtp_port, smtp_user, smtp_pass,
 - El descuento de stock ocurre en la misma transacción DB. Si un producto no tiene stock suficiente → la venta se rechaza completa.
 - `customer_id` es nullable. Las ventas anónimas son válidas.
 - Las ventas registran el `user_id` del cajero que las realizó.
+
+### Clientes
+- El `nombre` es el único campo obligatorio. `teléfono` y `email` son opcionales.
+- La búsqueda en el POS se realiza por `nombre`, `teléfono` o `email`.
+- El POS permite el registro rápido de clientes mediante un modal sin abandonar el flujo de venta.
 
 ### Notificaciones Email
 - Se disparan después de confirmar cada venta.

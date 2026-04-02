@@ -21,7 +21,7 @@ class CreateCustomerAction
         try {
             $customer = $this->customerService->create(
                 $body['name']  ?? '',
-                $body['phone'] ?? '',
+                isset($body['phone']) && $body['phone'] !== '' ? $body['phone'] : null,
                 isset($body['email']) && $body['email'] !== '' ? $body['email'] : null
             );
             $payload = ['success' => true, 'data' => $customer];

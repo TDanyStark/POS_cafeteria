@@ -1,157 +1,199 @@
-import { useState, useRef, useEffect } from 'react'
-import { Input } from '@/components/ui/input'
+import { useState } from 'react'
+import AsyncSelect from 'react-select/async'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { useCartStore } from '@/stores/cartStore'
-import { useCustomerSearch, useCreateCustomer } from '@/hooks/useCustomers'
-import type { Customer } from '@/types/sales'
 import { UserPlus, X, Search } from 'lucide-react'
-import { toast } from 'sonner'
+import api from '@/lib/axios'
+import type { PaginatedResponse } from '@/types/catalog'
+import type { Customer } from '@/types/sales'
+import { CustomerFormModal } from './CustomerFormModal'
+import { components, type GroupBase, type MenuProps } from 'react-select'
+
+interface CustomerOption {
+  value: number
+  label: string
+  customer: Customer
+}
 
 export function CustomerSelector() {
-  const [query, setQuery] = useState('')
-  const [showDropdown, setShowDropdown] = useState(false)
-  const [showNewModal, setShowNewModal] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [newPhone, setNewPhone] = useState('')
-  const [newEmail, setNewEmail] = useState('')
-  const wrapperRef = useRef<HTMLDivElement>(null)
-
   const customer = useCartStore((s) => s.customer)
   const setCustomer = useCartStore((s) => s.setCustomer)
+  const [showModal, setShowModal] = useState(false)
 
-  const { data: results } = useCustomerSearch(query)
-  const createCustomer = useCreateCustomer()
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setShowDropdown(false)
-      }
+  const loadOptions = async (inputValue: string) => {
+    if (!inputValue || inputValue.length < 1) return []
+    try {
+      const { data } = await api.get<PaginatedResponse<Customer>>(`/customers?search=${encodeURIComponent(inputValue)}`)
+      return data.data.map((c) => ({
+        value: c.id,
+        label: `${c.name} (${c.phone || 'Sin tel.'})`,
+        customer: c,
+      }))
+    } catch (error) {
+      console.error('Error fetching customers:', error)
+      return []
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }
 
-  const handleSelect = (c: Customer) => {
-    setCustomer(c)
-    setQuery('')
-    setShowDropdown(false)
+  const handleSelect = (option: CustomerOption | null) => {
+    if (option) {
+      setCustomer(option.customer)
+    } else {
+      setCustomer(null)
+    }
   }
 
   const handleClear = () => {
     setCustomer(null)
-    setQuery('')
   }
 
-  const handleCreate = async () => {
-    if (!newName.trim() || !newPhone.trim()) {
-      toast.error('Nombre y teléfono son requeridos')
-      return
-    }
-    try {
-      const c = await createCustomer.mutateAsync({
-        name: newName.trim(),
-        phone: newPhone.trim(),
-        email: newEmail.trim() || null,
-      })
-      setCustomer(c)
-      setShowNewModal(false)
-      setNewName('')
-      setNewPhone('')
-      setNewEmail('')
-      toast.success('Cliente registrado')
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al crear cliente'
-      toast.error(msg)
-    }
+  const handleCreateSuccess = (newCustomer: Customer) => {
+    setCustomer(newCustomer)
+    setShowModal(false)
+  }
+
+  // Custom components for react-select to match shadcn/ui
+  const CustomMenu = (props: MenuProps<CustomerOption, false, GroupBase<CustomerOption>>) => {
+    return (
+      <components.Menu {...props}>
+        <div>
+          {props.children}
+          <div className="border-t border-border p-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-xs h-8"
+              onMouseDown={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setShowModal(true)
+              }}
+            >
+              <UserPlus className="h-3.5 w-3.5 mr-2" />
+              Crear nuevo cliente
+            </Button>
+          </div>
+        </div>
+      </components.Menu>
+    )
   }
 
   if (customer) {
     return (
-      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted">
-        <div className="flex-1">
-          <p className="text-sm font-medium">{customer.name}</p>
-          <p className="text-xs text-muted-foreground">{customer.phone}</p>
+      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted border border-border animate-in fade-in duration-200">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold truncate">{customer.name}</p>
+          <p className="text-xs text-muted-foreground truncate">
+            {customer.phone || 'Sin teléfono'} {customer.email ? `• ${customer.email}` : ''}
+          </p>
         </div>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleClear}>
-          <X className="h-3 w-3" />
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-8 w-8 text-muted-foreground hover:text-foreground" 
+          onClick={handleClear}
+          title="Quitar cliente"
+        >
+          <X className="h-4 w-4" />
         </Button>
       </div>
     )
   }
 
   return (
-    <div ref={wrapperRef} className="relative">
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Buscar cliente (opcional)..."
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value)
-              setShowDropdown(true)
-            }}
-            onFocus={() => setShowDropdown(true)}
-            className="pl-8 h-9 text-sm"
-          />
-        </div>
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-9 w-9 shrink-0"
-          title="Registrar nuevo cliente"
-          onClick={() => setShowNewModal(true)}
-        >
-          <UserPlus className="h-4 w-4" />
-        </Button>
+    <div className="relative w-full">
+      <div className="relative group">
+        <AsyncSelect<CustomerOption, false>
+          cacheOptions
+          loadOptions={loadOptions}
+          onChange={(option) => handleSelect(option as CustomerOption | null)}
+          placeholder="Buscar cliente (nombre o tel)..."
+          noOptionsMessage={({ inputValue }) => 
+            inputValue.length < 1 ? "Escribe para buscar..." : "No se encontraron clientes"
+          }
+          loadingMessage={() => "Buscando..."}
+          components={{
+            Menu: CustomMenu,
+            DropdownIndicator: () => (
+              <div className="px-2">
+                <Search className="h-4 w-4 text-muted-foreground" />
+              </div>
+            ),
+            IndicatorSeparator: () => null,
+          }}
+          className="react-select-container"
+          classNamePrefix="react-select"
+          styles={{
+            control: (base, state) => ({
+              ...base,
+              backgroundColor: 'transparent',
+              borderColor: state.isFocused ? 'var(--ring)' : 'var(--input)',
+              borderRadius: 'var(--radius)',
+              minHeight: '2.25rem',
+              boxShadow: 'none',
+              '&:hover': {
+                borderColor: state.isFocused ? 'var(--ring)' : 'var(--input)',
+              },
+            }),
+            menu: (base) => ({
+              ...base,
+              backgroundColor: 'var(--popover)',
+              borderColor: 'var(--border)',
+              borderRadius: 'var(--radius)',
+              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+              overflow: 'hidden',
+              zIndex: 50,
+            }),
+            option: (base, state) => ({
+              ...base,
+              backgroundColor: state.isSelected 
+                ? 'var(--primary)' 
+                : state.isFocused 
+                  ? 'var(--accent)' 
+                  : 'transparent',
+              color: state.isSelected 
+                ? 'var(--primary-foreground)' 
+                : 'var(--foreground)',
+              fontSize: '0.875rem',
+              cursor: 'pointer',
+              '&:active': {
+                backgroundColor: 'var(--accent)',
+              },
+            }),
+            input: (base) => ({
+              ...base,
+              color: 'var(--foreground)',
+              fontSize: '0.875rem',
+            }),
+            placeholder: (base) => ({
+              ...base,
+              color: 'var(--muted-foreground)',
+              fontSize: '0.875rem',
+            }),
+            singleValue: (base) => ({
+              ...base,
+              color: 'var(--foreground)',
+              fontSize: '0.875rem',
+            }),
+            noOptionsMessage: (base) => ({
+              ...base,
+              fontSize: '0.875rem',
+              color: 'var(--muted-foreground)',
+            }),
+            loadingMessage: (base) => ({
+              ...base,
+              fontSize: '0.875rem',
+              color: 'var(--muted-foreground)',
+            }),
+          }}
+        />
       </div>
 
-      {showDropdown && results && results.length > 0 && (
-        <div className="absolute top-full mt-1 left-0 right-0 z-50 bg-popover border border-border rounded-lg shadow-lg overflow-hidden">
-          {results.map((c) => (
-            <button
-              key={c.id}
-              className="w-full text-left px-3 py-2 hover:bg-accent transition-colors text-sm"
-              onClick={() => handleSelect(c)}
-            >
-              <span className="font-medium">{c.name}</span>
-              <span className="text-muted-foreground ml-2">{c.phone}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* New Customer Modal */}
-      <Dialog open={showNewModal} onOpenChange={setShowNewModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Registrar nuevo cliente</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label>Nombre *</Label>
-              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nombre completo" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Teléfono *</Label>
-              <Input value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="300-000-0000" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Correo (opcional)</Label>
-              <Input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="correo@ejemplo.com" type="email" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewModal(false)}>Cancelar</Button>
-            <Button onClick={handleCreate} disabled={createCustomer.isPending}>
-              {createCustomer.isPending ? 'Guardando...' : 'Registrar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CustomerFormModal
+        open={showModal}
+        onOpenChange={setShowModal}
+        onSuccess={handleCreateSuccess}
+      />
     </div>
   )
 }

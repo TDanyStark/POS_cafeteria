@@ -29,7 +29,7 @@ interface CustomerRepositoryInterface
     /**
      * Create a new customer and return its ID.
      */
-    public function create(string $name, string $phone, ?string $email): int;
+    public function create(string $name, ?string $phone, ?string $email): int;
 
     /**
      * Search customers by name or phone (for autocomplete).
