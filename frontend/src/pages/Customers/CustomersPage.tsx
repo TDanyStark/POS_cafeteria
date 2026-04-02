@@ -95,18 +95,14 @@ export function CustomersPage() {
         await updateCustomer.mutateAsync({
           id: editingCustomer.id,
           name: newName.trim(),
-          phone: newPhone.trim() || '',
+          phone: newPhone.trim() || null,
           email: newEmail.trim() || null,
         })
         toast.success('Cliente actualizado')
       } else {
-        if (!newPhone.trim()) {
-          toast.error('El teléfono es requerido para nuevos clientes')
-          return
-        }
         await createCustomer.mutateAsync({
           name: newName.trim(),
-          phone: newPhone.trim(),
+          phone: newPhone.trim() || null,
           email: newEmail.trim() || null,
         })
         toast.success('Cliente registrado')
@@ -249,7 +245,7 @@ export function CustomersPage() {
               <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nombre completo" />
             </div>
             <div className="space-y-1.5">
-              <Label>Teléfono {editingCustomer ? '(opcional)' : '*'}</Label>
+              <Label>Teléfono (opcional)</Label>
               <Input value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="300-000-0000" />
             </div>
             <div className="space-y-1.5">

@@ -50,7 +50,7 @@ export function useCustomer(id: number) {
 export function useCreateCustomer() {
   const queryClient = useQueryClient()
 
-  return useMutation<Customer, Error, { name: string; phone: string; email?: string | null }>({
+  return useMutation<Customer, Error, { name: string; phone?: string | null; email?: string | null }>({
     mutationFn: async (payload) => {
       const { data } = await api.post<ApiResponse<Customer>>('/customers', payload)
       return data.data!
@@ -64,7 +64,7 @@ export function useCreateCustomer() {
 export function useUpdateCustomer() {
   const queryClient = useQueryClient()
 
-  return useMutation<Customer, Error, { id: number; name: string; phone: string; email?: string | null }>({
+  return useMutation<Customer, Error, { id: number; name: string; phone?: string | null; email?: string | null }>({
     mutationFn: async ({ id, ...payload }) => {
       const { data } = await api.put<ApiResponse<Customer>>(`/customers/${id}`, payload)
       return data.data!

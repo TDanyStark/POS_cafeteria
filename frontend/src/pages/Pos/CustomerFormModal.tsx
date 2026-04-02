@@ -86,14 +86,14 @@ export function CustomerFormModal({ open, onOpenChange, onSuccess, customer }: C
         result = await updateCustomer.mutateAsync({
           id: customer.id,
           name: data.name,
-          phone: data.phone || '',
+          phone: data.phone || null,
           email: data.email || null,
         })
         toast.success('Cliente actualizado correctamente')
       } else {
         result = await createCustomer.mutateAsync({
           name: data.name,
-          phone: data.phone || '',
+          phone: data.phone || null,
           email: data.email || null,
         })
         toast.success('Cliente registrado correctamente')
