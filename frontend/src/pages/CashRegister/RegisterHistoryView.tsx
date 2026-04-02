@@ -69,7 +69,7 @@ export function RegisterHistoryView() {
               ))
             ) : history && history.length > 0 ? (
               history.map((reg) => {
-                const diff = parseFloat(reg.difference || '0')
+                const diff = reg.difference ?? 0
                 const isBalanced = diff === 0
                 const isNegative = diff < 0
 
