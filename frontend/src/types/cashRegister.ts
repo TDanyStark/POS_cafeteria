@@ -22,8 +22,13 @@ export interface CashRegister {
   declared_amount: number | null
   difference: number | null
   status: 'open' | 'closed'
-  /** Computed by backend: initial_amount + cash_in - cash_out */
+  /** Computed by backend */
   expected_amount?: number
+  manual_cash_in?: number
+  manual_cash_out?: number
+  cash_sales?: number
+  transfer_sales?: number
+  /** Deprecated in favor of manual_cash_in/out */
   cash_in?: number
   cash_out?: number
   movements?: CashMovement[]

@@ -52,12 +52,17 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
             return null;
         }
 
-        $register['movements'] = $this->getMovements($id);
-        $register['cash_in']   = $this->sumCashIn($id);
-        $register['cash_out']  = $this->sumCashOut($id);
+        $register['movements']      = $this->getMovements($id);
+        $register['manual_cash_in'] = $this->sumCashIn($id);
+        $register['manual_cash_out']= $this->sumCashOut($id);
+        $register['cash_sales']     = $this->sumCashSales($id);
+        $register['transfer_sales'] = $this->sumTransferSales($id);
 
         $initialAmount = (float) $register['initial_amount'];
-        $register['expected_amount'] = $initialAmount + (float) $register['cash_in'] - (float) $register['cash_out'];
+        $register['expected_amount'] = $initialAmount 
+            + (float) $register['manual_cash_in'] 
+            - (float) $register['manual_cash_out'] 
+            + (float) $register['cash_sales'];
 
         return $register;
     }
@@ -139,6 +144,26 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
         $stmt = $this->pdo->prepare("
             SELECT COALESCE(SUM(amount), 0) FROM cash_movements
             WHERE cash_register_id = :id AND type = 'out'
+        ");
+        $stmt->execute(['id' => $cashRegisterId]);
+        return (float) $stmt->fetchColumn();
+    }
+
+    public function sumCashSales(int $cashRegisterId): float
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT COALESCE(SUM(total), 0) FROM sales
+            WHERE cash_register_id = :id AND payment_method = 'cash'
+        ");
+        $stmt->execute(['id' => $cashRegisterId]);
+        return (float) $stmt->fetchColumn();
+    }
+
+    public function sumTransferSales(int $cashRegisterId): float
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT COALESCE(SUM(total), 0) FROM sales
+            WHERE cash_register_id = :id AND payment_method = 'transfer'
         ");
         $stmt->execute(['id' => $cashRegisterId]);
         return (float) $stmt->fetchColumn();

@@ -91,15 +91,16 @@ export function CloseRegisterModal({ open, onClose, register }: CloseRegisterMod
             <span className="font-medium">{formatCurrency(register.initial_amount)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Ingresos en caja</span>
+            <span className="text-muted-foreground">Ventas (Efectivo)</span>
             <span className="font-medium text-green-600 dark:text-green-400">
-              +{formatCurrency(register.cash_in ?? 0)}
+              +{formatCurrency(register.cash_sales ?? 0)}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Egresos de caja</span>
-            <span className="font-medium text-red-500">
-              -{formatCurrency(register.cash_out ?? 0)}
+            <span className="text-muted-foreground">Movimientos Manuales</span>
+            <span className={`font-medium ${(register.manual_cash_in ?? register.cash_in ?? 0) - (register.manual_cash_out ?? register.cash_out ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'}`}>
+              {(register.manual_cash_in ?? register.cash_in ?? 0) - (register.manual_cash_out ?? register.cash_out ?? 0) >= 0 ? '+' : ''}
+              {formatCurrency((register.manual_cash_in ?? register.cash_in ?? 0) - (register.manual_cash_out ?? register.cash_out ?? 0))}
             </span>
           </div>
           <Separator />

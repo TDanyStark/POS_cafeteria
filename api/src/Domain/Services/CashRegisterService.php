@@ -61,10 +61,11 @@ class CashRegisterService
             throw new \InvalidArgumentException('El monto declarado no puede ser negativo.');
         }
 
-        $cashIn    = $this->cashRegisterRepository->sumCashIn($registerId);
-        $cashOut   = $this->cashRegisterRepository->sumCashOut($registerId);
-        $finalAmount = (float) $register['initial_amount'] + $cashIn - $cashOut;
-        $difference  = $declaredAmount - $finalAmount;
+        $cashIn        = $this->cashRegisterRepository->sumCashIn($registerId);
+        $cashOut       = $this->cashRegisterRepository->sumCashOut($registerId);
+        $cashSales     = $this->cashRegisterRepository->sumCashSales($registerId);
+        $finalAmount   = (float) $register['initial_amount'] + $cashIn - $cashOut + $cashSales;
+        $difference    = $declaredAmount - $finalAmount;
 
         $this->cashRegisterRepository->close($registerId, $declaredAmount, $finalAmount, $difference);
 

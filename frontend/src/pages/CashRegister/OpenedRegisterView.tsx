@@ -59,8 +59,10 @@ export function OpenedRegisterView({ register, isLoading }: OpenedRegisterViewPr
   }
 
   const movements = register.movements ?? []
-  const cashIn = register.cash_in ?? 0
-  const cashOut = register.cash_out ?? 0
+  const manualCashIn = register.manual_cash_in ?? register.cash_in ?? 0
+  const manualCashOut = register.manual_cash_out ?? register.cash_out ?? 0
+  const cashSales = register.cash_sales ?? 0
+  const transferSales = register.transfer_sales ?? 0
   const expectedAmount = register.expected_amount ?? 0
 
   return (
@@ -104,37 +106,46 @@ export function OpenedRegisterView({ register, isLoading }: OpenedRegisterViewPr
         <Card>
           <CardHeader className="pb-1 pt-4 px-4">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Ingresos
+              Ventas (Efectivo)
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4 px-4">
             <p className="text-lg font-bold text-green-600 dark:text-green-400">
-              +{formatCurrency(cashIn)}
+              +{formatCurrency(cashSales)}
             </p>
+            {transferSales > 0 && (
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Transf: {formatCurrency(transferSales)}
+              </p>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-1 pt-4 px-4">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Egresos
+              Movimientos Manuales
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4 px-4">
-            <p className="text-lg font-bold text-red-500">
-              -{formatCurrency(cashOut)}
+            <p className={`text-lg font-bold ${manualCashIn - manualCashOut >= 0 ? 'text-foreground' : 'text-red-500'}`}>
+              {manualCashIn - manualCashOut >= 0 ? '+' : ''}
+              {formatCurrency(manualCashIn - manualCashOut)}
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              In: {formatCurrency(manualCashIn)} | Out: {formatCurrency(manualCashOut)}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-primary/5 border-primary/20">
           <CardHeader className="pb-1 pt-4 px-4">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <CardTitle className="text-xs font-medium text-primary uppercase tracking-wide">
               Saldo esperado
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4 px-4">
-            <p className="text-lg font-bold text-foreground">
+            <p className="text-lg font-bold text-primary">
               {formatCurrency(expectedAmount)}
             </p>
           </CardContent>
