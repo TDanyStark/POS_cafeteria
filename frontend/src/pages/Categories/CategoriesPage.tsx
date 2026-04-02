@@ -83,7 +83,7 @@ export function CategoriesPage() {
             <TableRow>
               <TableHead>Nombre</TableHead>
               <TableHead>Slug</TableHead>
-              <TableHead className="w-[120px]">Acciones</TableHead>
+              <TableHead className="w-30">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
