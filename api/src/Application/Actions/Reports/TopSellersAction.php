@@ -18,8 +18,8 @@ class TopSellersAction
     {
         $params = $request->getQueryParams();
 
-        $limit = isset($params['limit']) ? (int) $params['limit'] : 10;
-        $limit = max(1, min(50, $limit));
+        $page = max(1, (int) ($params['page'] ?? 1));
+        $perPage = max(1, min(100, (int) ($params['per_page'] ?? 10)));
 
         $filters = [];
 
@@ -31,9 +31,13 @@ class TopSellersAction
             $filters['date_to'] = $params['date_to'];
         }
 
-        $data = $this->reportService->getTopSellers($limit, $filters);
+        $result = $this->reportService->getTopSellers($page, $perPage, $filters);
 
-        $payload = ['success' => true, 'data' => $data];
+        $payload = [
+            'success' => true,
+            'data' => $result['data'],
+            'pagination' => $result['pagination'],
+        ];
 
         $response->getBody()->write(json_encode($payload));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);

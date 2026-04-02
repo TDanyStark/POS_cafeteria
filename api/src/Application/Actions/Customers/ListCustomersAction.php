@@ -25,7 +25,16 @@ class ListCustomersAction
         // Handle autocomplete search
         if (!empty($params['q'])) {
             $customers = $this->customerService->search($params['q'], 10);
-            $payload   = ['success' => true, 'data' => $customers];
+            $payload   = [
+                'success' => true,
+                'data' => $customers,
+                'pagination' => [
+                    'total' => count($customers),
+                    'page' => 1,
+                    'per_page' => 10,
+                    'total_pages' => 1,
+                ],
+            ];
             $response->getBody()->write(json_encode($payload));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
         }

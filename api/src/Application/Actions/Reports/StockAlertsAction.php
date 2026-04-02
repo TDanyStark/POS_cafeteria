@@ -16,9 +16,18 @@ class StockAlertsAction
 
     public function __invoke(Request $request, Response $response): Response
     {
-        $data = $this->reportService->getStockAlerts();
+        $params = $request->getQueryParams();
 
-        $payload = ['success' => true, 'data' => $data];
+        $page = max(1, (int) ($params['page'] ?? 1));
+        $perPage = max(1, min(100, (int) ($params['per_page'] ?? 20)));
+
+        $result = $this->reportService->getStockAlerts($page, $perPage);
+
+        $payload = [
+            'success' => true,
+            'data' => $result['data'],
+            'pagination' => $result['pagination'],
+        ];
 
         $response->getBody()->write(json_encode($payload));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);

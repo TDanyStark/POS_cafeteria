@@ -13,6 +13,7 @@ export function ReportsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState('top-sellers')
 
+  const page = parseInt(searchParams.get('page') ?? '1')
   const dateFrom = searchParams.get('date_from') ?? ''
   const dateTo   = searchParams.get('date_to') ?? ''
 
@@ -24,6 +25,7 @@ export function ReportsPage() {
       } else {
         next.delete(key)
       }
+      if (key !== 'page') next.set('page', '1')
       return next
     })
   }
@@ -82,7 +84,12 @@ export function ReportsPage() {
         </TabsList>
 
         <TabsContent value="top-sellers" className="mt-4">
-          <TopSellersList dateFrom={dateFrom || undefined} dateTo={dateTo || undefined} />
+          <TopSellersList
+            page={page}
+            onPageChange={(nextPage) => setParam('page', String(nextPage))}
+            dateFrom={dateFrom || undefined}
+            dateTo={dateTo || undefined}
+          />
         </TabsContent>
 
         <TabsContent value="sales-summary" className="mt-4">
@@ -93,8 +100,18 @@ export function ReportsPage() {
   )
 }
 
-function TopSellersList({ dateFrom, dateTo }: { dateFrom?: string; dateTo?: string }) {
-  const { data, isLoading } = useTopSellers(10, dateFrom, dateTo)
+function TopSellersList({
+  page,
+  onPageChange,
+  dateFrom,
+  dateTo,
+}: {
+  page: number
+  onPageChange: (page: number) => void
+  dateFrom?: string
+  dateTo?: string
+}) {
+  const { data, isLoading } = useTopSellers(page, 10, dateFrom, dateTo)
 
   if (isLoading) {
     return (
@@ -106,7 +123,7 @@ function TopSellersList({ dateFrom, dateTo }: { dateFrom?: string; dateTo?: stri
     )
   }
 
-  if (!data || data.length === 0) {
+  if (!data || data.data.length === 0) {
     return (
       <Card>
         <CardContent className="py-12 text-center text-muted-foreground">
@@ -116,7 +133,7 @@ function TopSellersList({ dateFrom, dateTo }: { dateFrom?: string; dateTo?: stri
     )
   }
 
-  const maxQuantity = Math.max(...data.map((item) => item.total_quantity))
+  const maxQuantity = Math.max(...data.data.map((item) => item.total_quantity))
 
   return (
     <Card>
@@ -124,7 +141,7 @@ function TopSellersList({ dateFrom, dateTo }: { dateFrom?: string; dateTo?: stri
         <CardTitle className="text-lg">Productos más vendidos</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {data.map((product) => {
+        {data.data.map((product) => {
           const percentage = maxQuantity > 0 ? (product.total_quantity / maxQuantity) * 100 : 0
 
           return (
@@ -167,6 +184,35 @@ function TopSellersList({ dateFrom, dateTo }: { dateFrom?: string; dateTo?: stri
           )
         })}
       </CardContent>
+
+      {data.pagination.total_pages > 1 && (
+        <div className="px-6 pb-6 flex items-center justify-between text-sm text-muted-foreground">
+          <span>
+            Mostrando {data.data.length} de {data.pagination.total} productos
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => onPageChange(page - 1)}
+            >
+              Anterior
+            </Button>
+            <span>
+              Pagina {data.pagination.page} de {data.pagination.total_pages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= data.pagination.total_pages}
+              onClick={() => onPageChange(page + 1)}
+            >
+              Siguiente
+            </Button>
+          </div>
+        </div>
+      )}
     </Card>
   )
 }

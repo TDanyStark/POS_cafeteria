@@ -52,7 +52,7 @@ export function useDeleteUser() {
 
   return useMutation<void, Error, number>({
     mutationFn: async (id) => {
-      await api.delete(`/users/${id}`)
+      await api.delete<ApiResponse<null>>(`/users/${id}`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })

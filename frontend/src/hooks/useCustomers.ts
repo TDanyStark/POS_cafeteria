@@ -28,8 +28,8 @@ export function useCustomerSearch(query: string) {
   return useQuery<Customer[]>({
     queryKey: ['customers', 'search', query],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<Customer[]>>(`/customers?q=${encodeURIComponent(query)}`)
-      return data.data ?? []
+      const { data } = await api.get<PaginatedResponse<Customer>>(`/customers?q=${encodeURIComponent(query)}`)
+      return data.data
     },
     enabled: query.trim().length >= 2,
     staleTime: 10_000,

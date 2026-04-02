@@ -1,4 +1,5 @@
 Options All -Indexes
+Options -MultiViews
 
 <Files .htaccess>
 order allow,deny
@@ -7,6 +8,7 @@ deny from all
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
   # Redirect to HTTPS
   # RewriteEngine On
@@ -28,7 +30,7 @@ deny from all
   # absolute physical path to the directory that contains this htaccess file.
   # RewriteBase /
 
-  RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^ index.php [QSA,L]
 </IfModule>

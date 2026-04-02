@@ -188,12 +188,12 @@ Estado general: **EN PROGRESO**
 ---
 
 ## Checklist Global de Calidad
-- [ ] Todas las colecciones están paginadas
-- [ ] Todos los filtros y paginación reflejados en URL params
-- [ ] Skeleton loaders en todos los listados
-- [ ] Manejo de errores con Toast (nunca `alert()`)
-- [ ] Tipos TypeScript definidos para todas las respuestas del backend
-- [ ] Variables sensibles en `.env` (nunca hardcodeadas)
-- [ ] CORS configurado correctamente para producción en Hostinger
-- [ ] `.htaccess` configurado para Slim en `api/public/`
-- [ ] Build de producción probado (`npm run build`)
+- [x] Todas las colecciones están paginadas
+- [x] Todos los filtros y paginación reflejados en URL params
+- [x] Skeleton loaders en todos los listados
+- [x] Manejo de errores con Toast (nunca `alert()`)
+- [x] Tipos TypeScript definidos para todas las respuestas del backend
+- [x] Variables sensibles en `.env` (nunca hardcodeadas)
+- [x] CORS configurado correctamente para producción en Hostinger
+- [x] `.htaccess` configurado para Slim en `api/public/`
+- [x] Build de producción probado (`npm run build`)

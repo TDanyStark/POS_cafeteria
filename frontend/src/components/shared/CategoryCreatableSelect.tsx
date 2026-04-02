@@ -20,11 +20,11 @@ interface Props {
  * Se integra visualmente con el sistema de diseño (Shadcn + variables CSS del tema).
  */
 export function CategoryCreatableSelect({ value, onChange, hasError }: Props) {
-  const { data: categories, isLoading } = useCategories()
+  const { data: categories, isLoading } = useCategories({ page: 1, per_page: 100 })
   const createCategory = useCreateCategory()
 
   const options: Option[] =
-    categories?.map((cat) => ({
+    categories?.data.map((cat) => ({
       value: String(cat.id),
       label: cat.name,
     })) ?? []

@@ -13,10 +13,54 @@ class MySqlCategoryRepository implements CategoryRepositoryInterface
         private PDO $pdo
     ) {}
 
-    public function findAll(): array
+    public function findAll(int $page, int $perPage, ?string $search = null): array
     {
-        $stmt = $this->pdo->query('SELECT * FROM categories ORDER BY name ASC');
+        $page = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+        $offset = ($page - 1) * $perPage;
+
+        $where = '';
+        $params = [];
+
+        if ($search !== null && trim($search) !== '') {
+            $where = 'WHERE name LIKE :search OR slug LIKE :search';
+            $params['search'] = '%' . trim($search) . '%';
+        }
+
+        $sql = "SELECT * FROM categories {$where} ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
+        $stmt = $this->pdo->prepare($sql);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value, PDO::PARAM_STR);
+        }
+
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
         return $stmt->fetchAll();
+    }
+
+    public function count(?string $search = null): int
+    {
+        $where = '';
+        $params = [];
+
+        if ($search !== null && trim($search) !== '') {
+            $where = 'WHERE name LIKE :search OR slug LIKE :search';
+            $params['search'] = '%' . trim($search) . '%';
+        }
+
+        $sql = "SELECT COUNT(*) FROM categories {$where}";
+        $stmt = $this->pdo->prepare($sql);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value, PDO::PARAM_STR);
+        }
+
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
     }
 
     public function findById(int $id): ?array

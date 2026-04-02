@@ -50,7 +50,7 @@ export function ProductsPage() {
     active,
   })
 
-  const { data: categories } = useCategories()
+  const { data: categories } = useCategories({ page: 1, per_page: 100 })
 
   const setParam = (key: string, value: string | null) => {
     const next = new URLSearchParams(searchParams)
@@ -111,7 +111,7 @@ export function ProductsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas las categorías</SelectItem>
-            {categories?.map((cat) => (
+            {categories?.data.map((cat) => (
               <SelectItem key={cat.id} value={String(cat.id)}>
                 {cat.name}
               </SelectItem>

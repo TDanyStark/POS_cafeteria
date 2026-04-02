@@ -9,7 +9,12 @@ interface ReportRepositoryInterface
     /**
      * Get top selling products with optional date filters.
      */
-    public function findTopSellers(int $limit, array $filters = []): array;
+    public function findTopSellers(int $page, int $perPage, array $filters = []): array;
+
+    /**
+     * Count total products present in top sellers ranking result.
+     */
+    public function countTopSellers(array $filters = []): int;
 
     /**
      * Get sales summary aggregated by period and payment method.
@@ -19,5 +24,10 @@ interface ReportRepositoryInterface
     /**
      * Get products with stock <= min_stock.
      */
-    public function findStockAlerts(): array;
+    public function findStockAlerts(int $page, int $perPage): array;
+
+    /**
+     * Count products with stock <= min_stock.
+     */
+    public function countStockAlerts(): int;
 }

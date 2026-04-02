@@ -71,7 +71,7 @@ export function useDeleteProduct() {
 
   return useMutation<void, Error, number>({
     mutationFn: async (id) => {
-      await api.delete(`/products/${id}`)
+      await api.delete<ApiResponse<null>>(`/products/${id}`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })

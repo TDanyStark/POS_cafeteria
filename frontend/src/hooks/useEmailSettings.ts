@@ -30,7 +30,7 @@ export function useUpdateEmailSettings() {
 export function useSendTestEmail() {
   return useMutation<void, Error>({
     mutationFn: async () => {
-      await api.post('/settings/email/test')
+      await api.post<ApiResponse<null>>('/settings/email/test')
     },
   })
 }

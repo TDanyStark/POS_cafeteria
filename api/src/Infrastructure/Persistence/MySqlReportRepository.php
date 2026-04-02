@@ -13,8 +13,12 @@ class MySqlReportRepository implements ReportRepositoryInterface
         private PDO $pdo
     ) {}
 
-    public function findTopSellers(int $limit, array $filters = []): array
+    public function findTopSellers(int $page, int $perPage, array $filters = []): array
     {
+        $page = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+        $offset = ($page - 1) * $perPage;
+
         $params = [];
         $where  = [];
 
@@ -45,11 +49,12 @@ class MySqlReportRepository implements ReportRepositoryInterface
             {$whereClause}
             GROUP BY p.id, p.name, p.category_id, c.name
             ORDER BY total_quantity DESC
-            LIMIT :limit
+            LIMIT :limit OFFSET :offset
         ";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 
         foreach ($params as $key => $value) {
             $stmt->bindValue(':' . $key, $value, PDO::PARAM_STR);
@@ -64,6 +69,45 @@ class MySqlReportRepository implements ReportRepositoryInterface
         }
 
         return $results;
+    }
+
+    public function countTopSellers(array $filters = []): int
+    {
+        $params = [];
+        $where  = [];
+
+        if (!empty($filters['date_from'])) {
+            $where[] = 's.created_at >= :date_from';
+            $params['date_from'] = $filters['date_from'] . ' 00:00:00';
+        }
+
+        if (!empty($filters['date_to'])) {
+            $where[] = 's.created_at <= :date_to';
+            $params['date_to'] = $filters['date_to'] . ' 23:59:59';
+        }
+
+        $whereClause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $sql = "
+            SELECT COUNT(*)
+            FROM (
+                SELECT p.id
+                FROM sale_items si
+                INNER JOIN sales s ON s.id = si.sale_id
+                INNER JOIN products p ON p.id = si.product_id
+                {$whereClause}
+                GROUP BY p.id
+            ) ranked
+        ";
+
+        $stmt = $this->pdo->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value, PDO::PARAM_STR);
+        }
+
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
     }
 
     public function findSalesSummary(array $filters = []): array
@@ -122,8 +166,12 @@ class MySqlReportRepository implements ReportRepositoryInterface
         ];
     }
 
-    public function findStockAlerts(): array
+    public function findStockAlerts(int $page, int $perPage): array
     {
+        $page = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+        $offset = ($page - 1) * $perPage;
+
         $sql = "
             SELECT 
                 p.id,
@@ -137,9 +185,20 @@ class MySqlReportRepository implements ReportRepositoryInterface
             LEFT JOIN categories c ON c.id = p.category_id
             WHERE p.active = 1 AND p.stock <= p.min_stock
             ORDER BY p.stock ASC
+            LIMIT :limit OFFSET :offset
         ";
 
-        $stmt = $this->pdo->query($sql);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
         return $stmt->fetchAll();
+    }
+
+    public function countStockAlerts(): int
+    {
+        $stmt = $this->pdo->query('SELECT COUNT(*) FROM products WHERE active = 1 AND stock <= min_stock');
+        return (int) $stmt->fetchColumn();
     }
 }

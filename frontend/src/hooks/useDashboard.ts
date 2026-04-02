@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/axios'
-import type { ApiResponse } from '@/types/catalog'
+import type { ApiResponse, PaginatedResponse } from '@/types/catalog'
 import type { Sale } from '@/types/sales'
 import type { DailySummary, StockAlert } from '@/types/reports'
 
@@ -27,8 +27,8 @@ export function useLatestSales(limit: number = 5) {
   return useQuery<Sale[]>({
     queryKey: ['dashboard', 'latest-sales', limit, today],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<Sale[]>>(`/sales?date_from=${today}&date_to=${today}&limit=${limit}`)
-      return data.data!
+      const { data } = await api.get<PaginatedResponse<Sale>>(`/sales?date_from=${today}&date_to=${today}&limit=${limit}`)
+      return data.data
     },
   })
 }
@@ -37,8 +37,8 @@ export function useStockAlerts() {
   return useQuery<StockAlert[]>({
     queryKey: ['dashboard', 'stock-alerts'],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<StockAlert[]>>('/reports/stock-alerts')
-      return data.data!
+      const { data } = await api.get<PaginatedResponse<StockAlert>>('/reports/stock-alerts?page=1&per_page=20')
+      return data.data
     },
   })
 }

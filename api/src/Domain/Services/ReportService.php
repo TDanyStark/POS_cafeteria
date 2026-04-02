@@ -12,9 +12,23 @@ class ReportService
         private ReportRepositoryInterface $reportRepository
     ) {}
 
-    public function getTopSellers(int $limit, array $filters = []): array
+    public function getTopSellers(int $page, int $perPage, array $filters = []): array
     {
-        return $this->reportRepository->findTopSellers($limit, $filters);
+        $page = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+
+        $items = $this->reportRepository->findTopSellers($page, $perPage, $filters);
+        $total = $this->reportRepository->countTopSellers($filters);
+
+        return [
+            'data' => $items,
+            'pagination' => [
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_pages' => (int) ceil($total / $perPage),
+            ],
+        ];
     }
 
     public function getSalesSummary(array $filters = []): array
@@ -22,8 +36,22 @@ class ReportService
         return $this->reportRepository->findSalesSummary($filters);
     }
 
-    public function getStockAlerts(): array
+    public function getStockAlerts(int $page, int $perPage): array
     {
-        return $this->reportRepository->findStockAlerts();
+        $page = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+
+        $items = $this->reportRepository->findStockAlerts($page, $perPage);
+        $total = $this->reportRepository->countStockAlerts();
+
+        return [
+            'data' => $items,
+            'pagination' => [
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_pages' => (int) ceil($total / $perPage),
+            ],
+        ];
     }
 }

@@ -27,7 +27,7 @@ class CustomerService
             'data'       => $items,
             'pagination' => [
                 'page'        => $page,
-                'limit'       => $limit,
+                'per_page'    => $limit,
                 'total'       => $total,
                 'total_pages' => (int) ceil($total / $limit),
             ],

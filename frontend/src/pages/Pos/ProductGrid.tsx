@@ -13,7 +13,7 @@ export function ProductGrid() {
   const [search, setSearch] = useState('')
   const [categoryId, setCategoryId] = useState<number | null>(null)
 
-  const { data: categoriesData } = useCategories()
+  const { data: categoriesData } = useCategories({ page: 1, per_page: 100 })
   const { data: productsData, isLoading } = useProducts({
     search,
     category_id: categoryId,
@@ -55,7 +55,7 @@ export function ProductGrid() {
         >
           Todos
         </Button>
-        {categoriesData?.map((cat) => (
+        {categoriesData?.data.map((cat) => (
           <Button
             key={cat.id}
             variant={categoryId === cat.id ? 'default' : 'outline'}

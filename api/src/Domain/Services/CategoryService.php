@@ -12,9 +12,28 @@ class CategoryService
         private CategoryRepositoryInterface $categoryRepository
     ) {}
 
-    public function getAll(): array
+    public function getAll(int $page, int $perPage, ?string $search = null): array
     {
-        return $this->categoryRepository->findAll();
+        $page = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+        $search = $search !== null ? trim($search) : null;
+
+        if ($search === '') {
+            $search = null;
+        }
+
+        $items = $this->categoryRepository->findAll($page, $perPage, $search);
+        $total = $this->categoryRepository->count($search);
+
+        return [
+            'data' => $items,
+            'pagination' => [
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_pages' => (int) ceil($total / $perPage),
+            ],
+        ];
     }
 
     public function getById(int $id): ?array

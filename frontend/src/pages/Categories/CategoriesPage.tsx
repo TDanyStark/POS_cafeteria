@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
@@ -16,10 +18,31 @@ import { DeleteCategoryDialog } from './DeleteCategoryDialog'
 import type { Category } from '@/types/catalog'
 
 export function CategoriesPage() {
-  const { data: categories, isLoading } = useCategories()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const page = parseInt(searchParams.get('page') ?? '1')
+  const search = searchParams.get('search') ?? ''
+
+  const { data: categories, isLoading } = useCategories({
+    page,
+    per_page: 20,
+    search: search || undefined,
+  })
   const [formOpen, setFormOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Category | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null)
+
+  const setParam = (key: string, value: string | null) => {
+    const next = new URLSearchParams(searchParams)
+    if (value === null || value === '') {
+      next.delete(key)
+    } else {
+      next.set(key, value)
+    }
+    if (key !== 'page') next.set('page', '1')
+    setSearchParams(next)
+  }
+
+  const pagination = categories?.pagination
 
   const handleEdit = (category: Category) => {
     setEditTarget(category)
@@ -46,6 +69,14 @@ export function CategoriesPage() {
         </Button>
       </div>
 
+      <div className="w-full max-w-xs">
+        <Input
+          placeholder="Buscar por nombre o slug"
+          value={search}
+          onChange={(event) => setParam('search', event.target.value)}
+        />
+      </div>
+
       <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
@@ -64,8 +95,8 @@ export function CategoriesPage() {
                   <TableCell><Skeleton className="h-8 w-20" /></TableCell>
                 </TableRow>
               ))
-            ) : categories && categories.length > 0 ? (
-              categories.map((category) => (
+            ) : categories?.data && categories.data.length > 0 ? (
+              categories.data.map((category) => (
                 <TableRow key={category.id}>
                   <TableCell className="font-medium text-foreground">
                     {category.name}
@@ -106,6 +137,35 @@ export function CategoriesPage() {
           </TableBody>
         </Table>
       </div>
+
+      {pagination && pagination.total_pages > 1 && (
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>
+            Mostrando {categories?.data.length ?? 0} de {pagination.total} categorias
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setParam('page', String(page - 1))}
+            >
+              Anterior
+            </Button>
+            <span>
+              Pagina {pagination.page} de {pagination.total_pages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= pagination.total_pages}
+              onClick={() => setParam('page', String(page + 1))}
+            >
+              Siguiente
+            </Button>
+          </div>
+        </div>
+      )}
 
       <CategoryFormModal
         open={formOpen}
