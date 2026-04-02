@@ -176,9 +176,9 @@ class MySqlProductRepository implements ProductRepositoryInterface
     public function decrementStock(int $id, int $amount): bool
     {
         $stmt = $this->pdo->prepare('
-            UPDATE products SET stock = stock - :amount, updated_at = NOW() WHERE id = :id AND stock >= :amount
+            UPDATE products SET stock = stock - :amount, updated_at = NOW() WHERE id = :id AND stock >= :min_amount
         ');
-        $stmt->execute(['id' => $id, 'amount' => $amount]);
+        $stmt->execute(['id' => $id, 'amount' => $amount, 'min_amount' => $amount]);
         return $stmt->rowCount() > 0;
     }
 }
