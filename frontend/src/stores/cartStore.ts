@@ -33,6 +33,8 @@ export const useCartStore = create<CartState>((set, get) => ({
   addItem: (product) => {
     set((state) => {
       const existing = state.items.find((i) => i.product_id === product.product_id)
+      const unitPrice = Number(product.unit_price)
+
       if (existing) {
         return {
           items: state.items.map((i) =>
@@ -40,7 +42,7 @@ export const useCartStore = create<CartState>((set, get) => ({
               ? {
                   ...i,
                   quantity: Math.min(i.quantity + 1, product.stock),
-                  subtotal: (i.quantity + 1) * i.unit_price,
+                  subtotal: (i.quantity + 1) * unitPrice,
                 }
               : i
           ),
@@ -51,8 +53,9 @@ export const useCartStore = create<CartState>((set, get) => ({
           ...state.items,
           {
             ...product,
+            unit_price: unitPrice,
             quantity: 1,
-            subtotal: product.unit_price,
+            subtotal: unitPrice,
           },
         ],
       }
@@ -71,11 +74,17 @@ export const useCartStore = create<CartState>((set, get) => ({
       return
     }
     set((state) => ({
-      items: state.items.map((i) =>
-        i.product_id === productId
-          ? { ...i, quantity: Math.min(quantity, i.stock), subtotal: Math.min(quantity, i.stock) * i.unit_price }
-          : i
-      ),
+      items: state.items.map((i) => {
+        if (i.product_id === productId) {
+          const qty = Math.min(quantity, i.stock)
+          return { 
+            ...i, 
+            quantity: qty, 
+            subtotal: qty * Number(i.unit_price) 
+          }
+        }
+        return i
+      }),
     }))
   },
 
@@ -93,7 +102,7 @@ export const useCartStore = create<CartState>((set, get) => ({
       notes: '',
     }),
 
-  getTotal: () => get().items.reduce((sum, i) => sum + i.subtotal, 0),
+  getTotal: () => get().items.reduce((sum, i) => sum + Number(i.subtotal), 0),
   getChange: () => {
     const state = get()
     if (state.paymentMethod !== 'cash') return 0

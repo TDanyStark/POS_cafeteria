@@ -1,5 +1,7 @@
 param(
-    [switch]$Quick
+    [switch]$Quick,
+    [switch]$Full,        # Incluye la carpeta vendor + ejecuta migrate/seed
+    [switch]$Reset        # Ejecuta 'composer reset' en el servidor
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,13 +20,15 @@ if (-not (Test-Path $ConfigPath)) {
 
 . $ConfigPath
 
-# 2. Funciones de Ayuda
+# 2. Rutas Absolutas del Servidor
+$RemotePath = "/home/u744125515/domains/cafeteriafe.gplclubsupport.com/public_html"
+$RemoteApiPath = "$RemotePath/api"
+
+# 3. Funciones de Ayuda
 $SshTarget = "$($Config.SshUser)@$($Config.SshHost)"
 $SshPort = $Config.SshPort
 $SshPass = $Config.SshPass
 
-# Argumentos base para plink/pscp
-# -batch evita que pida "Press Return to begin session"
 $CommonArgs = @("-batch", "-P", "$SshPort", "-pw", "$SshPass")
 if ($Config.SshHostKey) {
     $CommonArgs += "-hostkey"
@@ -32,111 +36,109 @@ if ($Config.SshHostKey) {
 }
 
 function Invoke-Ssh {
-    param([string]$Command)
-    # Ejecutamos comando remoto
-    plink @CommonArgs $SshTarget "$Command"
+    param([string]$Command, [string]$WorkDir = $RemotePath)
+    # Ejecutamos comando asegurando que estamos en la carpeta correcta
+    $FullCommand = "cd $WorkDir && $Command"
+    plink @CommonArgs $SshTarget "$FullCommand" 2>&1
 }
 
 function Send-SecureFile {
-    param($Source, $RemotePath, $IsRecursive=$false)
-    # pscp espera: pscp [options] [user@]host:source target OR pscp [options] source [user@]host:target
-    # Para subir: pscp source [user@]host:target
+    param($Source, $RemoteFileName)
+    $Target = "$($SshTarget):$RemotePath/$RemoteFileName"
     $PscpArgs = @()
-    if ($IsRecursive) { $PscpArgs += "-r" }
     foreach ($arg in $CommonArgs) { $PscpArgs += $arg }
-    
-    # IMPORTANTE: pscp en Windows a veces falla con asteriscos si no se manejan bien
     $PscpArgs += $Source
-    # Hostinger SSH suele rootear en /home/uXXXX/
-    # Usamos la ruta absoluta si es posible o relativa sin ":" inicial extra
-    $PscpArgs += "$($SshTarget):public_html/$RemotePath"
+    $PscpArgs += $Target
     
     pscp @PscpArgs
 }
 
 Write-Host "Iniciando despliegue de POS Cafetería..." -ForegroundColor Cyan
 
-# 3. Build Frontend
+# 4. Build Frontend
 Write-Host "Preparando Frontend..." -ForegroundColor Cyan
 Push-Location "$PSScriptRoot\frontend"
-try {
-    npm run build
-} catch {
-    Write-Error "Error al compilar el frontend."
-    Pop-Location
-    exit
-}
+try { npm run build } catch { Write-Error "Build frontend falló"; Pop-Location; exit }
 Pop-Location
 
-# 4. Preparar API
+# 5. Preparar Paquetes ZIP
 $TempPath = "$PSScriptRoot\temp_deploy"
 if (Test-Path $TempPath) { Remove-Item -Recurse -Force $TempPath }
 New-Item -ItemType Directory -Path $TempPath | Out-Null
 
-$ZipPath = "$PSScriptRoot\api.zip"
-if (Test-Path $ZipPath) { Remove-Item $ZipPath }
+Write-Host "Comprimiendo archivos para subida..." -ForegroundColor Cyan
 
-if (-not $Quick) {
-    Write-Host "Comprimiendo API completa..." -ForegroundColor Cyan
-    $ApiTemp = "$TempPath\api"
-    New-Item -ItemType Directory -Path $ApiTemp | Out-Null
-    Copy-Item -Path "$PSScriptRoot\api\*" -Destination $ApiTemp -Recurse -Exclude "vendor", ".env", ".git", "composer.lock", "logs", "var", "tests"
-    # Comprimimos el CONTENIDO de la carpeta temp_deploy/api
-    Compress-Archive -Path "$ApiTemp\*" -DestinationPath $ZipPath
+# Frontend ZIP
+$FrontendZip = "$TempPath\frontend.zip"
+Compress-Archive -Path "$PSScriptRoot\frontend\dist\*" -DestinationPath $FrontendZip
+
+# API ZIP
+$ApiZip = "$TempPath\api.zip"
+if ($Quick) {
+    Write-Host "Modo Rápido: Solo carpetas de código (app, public, src, database)..." -ForegroundColor Gray
+    $ApiTemp = "$TempPath\api_quick"
+    New-Item -ItemType Directory -Path "$ApiTemp\api" | Out-Null
+    foreach ($folder in @("app", "public", "src", "database")) {
+        if (Test-Path "$PSScriptRoot\api\$folder") {
+            Copy-Item -Path "$PSScriptRoot\api\$folder" -Destination "$ApiTemp\api\$folder" -Recurse
+        }
+    }
+    Compress-Archive -Path "$ApiTemp\*" -DestinationPath $ApiZip
+} elseif ($Full) {
+    Write-Host "Modo FULL: Incluyendo carpeta vendor (esto tardará más)..." -ForegroundColor Yellow
+    $ApiTemp = "$TempPath\api_full"
+    New-Item -ItemType Directory -Path "$ApiTemp\api" | Out-Null
+    Copy-Item -Path "$PSScriptRoot\api\*" -Destination "$ApiTemp\api" -Recurse -Exclude ".env", ".git", "logs", "var", "tests"
+    Compress-Archive -Path "$ApiTemp\*" -DestinationPath $ApiZip
 } else {
-    Write-Host "Modo Rápido: Preparando solo archivos cambiados..." -ForegroundColor Cyan
+    Write-Host "Modo Estándar: Sin carpeta vendor..." -ForegroundColor Gray
+    $ApiTemp = "$TempPath\api_std"
+    New-Item -ItemType Directory -Path "$ApiTemp\api" | Out-Null
+    Copy-Item -Path "$PSScriptRoot\api\*" -Destination "$ApiTemp\api" -Recurse -Exclude "vendor", ".env", ".git", "composer.lock", "logs", "var", "tests"
+    Compress-Archive -Path "$ApiTemp\*" -DestinationPath $ApiZip
 }
 
-# 5. Operaciones SSH (Backup y Limpieza)
-Write-Host "Conectando via SSH para respaldar .env..." -ForegroundColor Cyan
-# Verificamos dónde estamos parados en el servidor
-$RemoteHome = Invoke-Ssh "pwd"
-Write-Host "Home remota: $RemoteHome" -ForegroundColor Gray
-
-Invoke-Ssh "mkdir -p public_html/api && if [ -f public_html/api/.env ]; then cp public_html/api/.env .env.bak; fi"
+# 6. Backup y Limpieza
+Write-Host "Respaldando .env en el servidor..." -ForegroundColor Cyan
+Invoke-Ssh "mkdir -p api && [ -f api/.env ] && cp api/.env ../.env_pos.bak || echo 'Sin .env previo'"
 
 if (-not $Quick) {
-    Write-Host "Limpiando archivos antiguos del frontend en el servidor..." -ForegroundColor Cyan
+    Write-Host "Limpiando servidor (excepto api/ y excepciones)..." -ForegroundColor Cyan
     $Excludes = $Config.KeepEntries + "api" + "." + ".."
     $ExcludeString = ""
-    foreach ($entry in $Excludes) {
-        $ExcludeString += " ! -name '$entry'"
-    }
-    Invoke-Ssh "find public_html -maxdepth 1 $ExcludeString ! -name 'public_html' -exec rm -rf {} +"
+    foreach ($entry in $Excludes) { $ExcludeString += " ! -name '$entry'" }
+    Invoke-Ssh "find . -maxdepth 1 $ExcludeString ! -name '.' -exec rm -rf {} +"
 }
 
-# 6. Subida de archivos
-Write-Host "Subiendo archivos al servidor..." -ForegroundColor Cyan
+# 7. Subir y Descomprimir
+Write-Host "Subiendo paquetes ZIP..." -ForegroundColor Cyan
+Send-SecureFile $FrontendZip "frontend.zip"
+Send-SecureFile $ApiZip "api.zip"
 
-# Subir Frontend
-Write-Host "Subiendo Frontend (dist)..." -ForegroundColor Gray
-# pscp no siempre expande asteriscos locales igual que la shell, enviamos la carpeta
-Send-SecureFile "$PSScriptRoot\frontend\dist\" "" $true
-
-# Subir API
-if ($Quick) {
-    Write-Host "Subiendo carpetas críticas de la API..." -ForegroundColor Gray
-    foreach ($folder in @("app", "public", "src", "database")) {
-        Send-SecureFile "$PSScriptRoot\api\$folder" "api/" $true
-    }
-} else {
-    Write-Host "Subiendo api.zip..." -ForegroundColor Gray
-    Send-SecureFile $ZipPath "api.zip"
-    Write-Host "Descomprimiendo en el servidor..." -ForegroundColor Gray
-    # Descomprimir en public_html/api/
-    Invoke-Ssh "mkdir -p public_html/api && unzip -o public_html/api.zip -d public_html/api/ && rm public_html/api.zip"
-}
+Write-Host "Desplegando en el servidor..." -ForegroundColor Cyan
+Invoke-Ssh "unzip -o frontend.zip && unzip -o api.zip && rm frontend.zip api.zip"
 
 # Subir .htaccess
-Write-Host "Subiendo .htaccess..." -ForegroundColor Gray
+Write-Host "Subiendo .htaccess..." -ForegroundColor Cyan
 Send-SecureFile "$PSScriptRoot\htaccess" ".htaccess"
 
-# 7. Restaurar .env y Finalizar
-Write-Host "Restaurando .env y finalizando..." -ForegroundColor Cyan
-Invoke-Ssh "if [ -f .env.bak ]; then mv .env.bak public_html/api/.env; fi"
+# 8. Restaurar .env
+Write-Host "Restaurando .env..." -ForegroundColor Cyan
+Invoke-Ssh "[ -f ../.env_pos.bak ] && mv ../.env_pos.bak api/.env || echo 'No hay backup que restaurar'"
 
-# Limpiar local
-if (Test-Path $ZipPath) { Remove-Item $ZipPath }
+# 9. Tareas de Base de Datos (Nuevas banderas)
+if ($Reset) {
+    Write-Host "Ejecutando COMPOSER RESET en el servidor..." -ForegroundColor Yellow
+    Invoke-Ssh "composer reset" -WorkDir $RemoteApiPath
+}
+
+if ($Full) {
+    Write-Host "Modo Full Detectado: Ejecutando MIGRACIONES y SEEDERS..." -ForegroundColor Cyan
+    Invoke-Ssh "composer migrate" -WorkDir $RemoteApiPath
+    Invoke-Ssh "composer seed" -WorkDir $RemoteApiPath
+}
+
+# 10. Limpieza Local
 if (Test-Path $TempPath) { Remove-Item -Recurse -Force $TempPath }
 
 Write-Host "¡Despliegue completado con éxito!" -ForegroundColor Green

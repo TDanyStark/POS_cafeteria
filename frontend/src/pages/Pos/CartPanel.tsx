@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { useCartStore } from '@/stores/cartStore'
@@ -58,9 +57,9 @@ export function CartPanel() {
   }
 
   return (
-    <div className="flex flex-col h-full border-l border-border bg-card">
+    <div className="flex flex-col h-full border-l border-border bg-card overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-none">
         <div className="flex items-center gap-2 font-semibold">
           <ShoppingCart className="h-5 w-5" />
           <span>Carrito</span>
@@ -78,103 +77,109 @@ export function CartPanel() {
       </div>
 
       {/* Items */}
-      <ScrollArea className="flex-1 px-4">
-        {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground text-sm">
-            <ShoppingCart className="h-8 w-8 mb-2 opacity-30" />
-            Agrega productos al carrito
-          </div>
-        ) : (
-          <div className="py-2">
-            {items.map((item) => (
-              <CartItemRow key={item.product_id} item={item} />
-            ))}
-          </div>
-        )}
-      </ScrollArea>
+      <div className="flex-1 min-h-0">
+        <ScrollArea className="h-full px-4">
+          {items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full min-h-32 text-muted-foreground text-sm">
+              <ShoppingCart className="h-8 w-8 mb-2 opacity-30" />
+              Agrega productos al carrito
+            </div>
+          ) : (
+            <div className="py-2">
+              {items.map((item) => (
+                <CartItemRow key={item.product_id} item={item} />
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+      </div>
 
       {/* Footer — Payment */}
       {items.length > 0 && (
-        <div className="px-4 py-3 border-t border-border space-y-3">
-          {/* Customer */}
-          <div>
-            <Label className="text-xs text-muted-foreground mb-1 block">Cliente (opcional)</Label>
-            <CustomerSelector />
-          </div>
+        <div className="flex-none border-t border-border bg-card">
+          <ScrollArea>
+            <div className="px-4 py-3 space-y-3">
+              {/* Customer */}
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Cliente (opcional)</Label>
+                <CustomerSelector />
+              </div>
 
-          {/* Payment Method */}
-          <div>
-            <Label className="text-xs text-muted-foreground mb-1 block">Método de pago</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant={paymentMethod === 'cash' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setPaymentMethod('cash')}
-              >
-                Efectivo
-              </Button>
-              <Button
-                variant={paymentMethod === 'transfer' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setPaymentMethod('transfer')}
-              >
-                Transferencia
-              </Button>
+              {/* Payment Method */}
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Método de pago</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant={paymentMethod === 'cash' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPaymentMethod('cash')}
+                  >
+                    Efectivo
+                  </Button>
+                  <Button
+                    variant={paymentMethod === 'transfer' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPaymentMethod('transfer')}
+                  >
+                    Transferencia
+                  </Button>
+                </div>
+              </div>
+
+              {/* Amount paid */}
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Monto recibido</Label>
+                <Input
+                  type="number"
+                  min={total}
+                  step="1000"
+                  value={amountPaid || ''}
+                  onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
+                  placeholder={`Mínimo $${total.toLocaleString()}`}
+                  className="h-9"
+                />
+              </div>
+
+              {/* Change */}
+              {paymentMethod === 'cash' && amountPaid > 0 && (
+                <div className={`flex justify-between text-sm font-medium rounded-lg px-3 py-2 ${
+                  change >= 0 ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400'
+                }`}>
+                  <span>Cambio</span>
+                  <span>${change.toLocaleString()}</span>
+                </div>
+              )}
+
+              {/* Notes */}
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Notas (opcional)</Label>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Observaciones..."
+                  rows={2}
+                  className="text-sm resize-none"
+                />
+              </div>
             </div>
-          </div>
+          </ScrollArea>
 
-          {/* Amount paid */}
-          <div>
-            <Label className="text-xs text-muted-foreground mb-1 block">Monto recibido</Label>
-            <Input
-              type="number"
-              min={total}
-              step="1000"
-              value={amountPaid || ''}
-              onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
-              placeholder={`Mínimo $${total.toLocaleString()}`}
-              className="h-9"
-            />
-          </div>
-
-          {/* Change */}
-          {paymentMethod === 'cash' && amountPaid > 0 && (
-            <div className={`flex justify-between text-sm font-medium rounded-lg px-3 py-2 ${
-              change >= 0 ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400'
-            }`}>
-              <span>Cambio</span>
-              <span>${change.toLocaleString()}</span>
+          {/* Fixed Footer Bottom (Total and Button) */}
+          <div className="px-4 py-3 border-t border-border space-y-3 bg-card">
+            <div className="flex justify-between items-center text-lg font-bold">
+              <span>Total</span>
+              <span className="text-primary">${total.toLocaleString()}</span>
             </div>
-          )}
 
-          {/* Notes */}
-          <div>
-            <Label className="text-xs text-muted-foreground mb-1 block">Notas (opcional)</Label>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Observaciones..."
-              rows={2}
-              className="text-sm resize-none"
-            />
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={!canPay || createSale.isPending}
+              onClick={handleCheckout}
+            >
+              {createSale.isPending ? 'Procesando...' : 'Confirmar venta'}
+            </Button>
           </div>
-
-          {/* Total + confirm */}
-          <Separator />
-
-          <div className="flex justify-between items-center text-lg font-bold">
-            <span>Total</span>
-            <span className="text-primary">${total.toLocaleString()}</span>
-          </div>
-
-          <Button
-            className="w-full"
-            size="lg"
-            disabled={!canPay || createSale.isPending}
-            onClick={handleCheckout}
-          >
-            {createSale.isPending ? 'Procesando...' : 'Confirmar venta'}
-          </Button>
         </div>
       )}
 
