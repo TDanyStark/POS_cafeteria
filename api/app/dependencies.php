@@ -7,15 +7,24 @@ use App\Application\Middleware\JwtMiddleware;
 use App\Application\Settings\SettingsInterface;
 use App\Domain\Repositories\CashRegisterRepositoryInterface;
 use App\Domain\Repositories\CategoryRepositoryInterface;
+use App\Domain\Repositories\CustomerRepositoryInterface;
 use App\Domain\Repositories\ProductRepositoryInterface;
+use App\Domain\Repositories\ReportRepositoryInterface;
+use App\Domain\Repositories\SaleRepositoryInterface;
 use App\Domain\Repositories\UserRepositoryInterface;
 use App\Domain\Services\AuthService;
 use App\Domain\Services\CashRegisterService;
 use App\Domain\Services\CategoryService;
+use App\Domain\Services\CustomerService;
 use App\Domain\Services\ProductService;
+use App\Domain\Services\ReportService;
+use App\Domain\Services\SaleService;
 use App\Infrastructure\Persistence\MySqlCashRegisterRepository;
 use App\Infrastructure\Persistence\MySqlCategoryRepository;
+use App\Infrastructure\Persistence\MySqlCustomerRepository;
 use App\Infrastructure\Persistence\MySqlProductRepository;
+use App\Infrastructure\Persistence\MySqlReportRepository;
+use App\Infrastructure\Persistence\MySqlSaleRepository;
 use App\Infrastructure\Persistence\MySqlUserRepository;
 use DI\ContainerBuilder;
 use Monolog\Handler\StreamHandler;
@@ -106,6 +115,39 @@ return function (ContainerBuilder $containerBuilder) {
                 $c->get(CashRegisterRepositoryInterface::class),
                 new ResponseFactory()
             );
+        },
+
+        // Customer
+        CustomerRepositoryInterface::class => function (ContainerInterface $c) {
+            return new MySqlCustomerRepository($c->get(PDO::class));
+        },
+
+        CustomerService::class => function (ContainerInterface $c) {
+            return new CustomerService($c->get(CustomerRepositoryInterface::class));
+        },
+
+        // Sale
+        SaleRepositoryInterface::class => function (ContainerInterface $c) {
+            return new MySqlSaleRepository($c->get(PDO::class));
+        },
+
+        SaleService::class => function (ContainerInterface $c) {
+            return new SaleService(
+                $c->get(SaleRepositoryInterface::class),
+                $c->get(ProductRepositoryInterface::class),
+                $c->get(CashRegisterRepositoryInterface::class),
+                $c->get(CustomerRepositoryInterface::class),
+                $c->get(PDO::class)
+            );
+        },
+
+        // Report
+        ReportRepositoryInterface::class => function (ContainerInterface $c) {
+            return new MySqlReportRepository($c->get(PDO::class));
+        },
+
+        ReportService::class => function (ContainerInterface $c) {
+            return new ReportService($c->get(ReportRepositoryInterface::class));
         },
     ]);
 };

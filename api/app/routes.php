@@ -13,11 +13,20 @@ use App\Application\Actions\Categories\CreateCategoryAction;
 use App\Application\Actions\Categories\DeleteCategoryAction;
 use App\Application\Actions\Categories\ListCategoriesAction;
 use App\Application\Actions\Categories\UpdateCategoryAction;
+use App\Application\Actions\Customers\CreateCustomerAction;
+use App\Application\Actions\Customers\GetCustomerAction;
+use App\Application\Actions\Customers\ListCustomersAction;
 use App\Application\Actions\Products\CreateProductAction;
 use App\Application\Actions\Products\DeleteProductAction;
 use App\Application\Actions\Products\ListProductsAction;
 use App\Application\Actions\Products\UpdateProductAction;
 use App\Application\Actions\Products\UpdateProductStockAction;
+use App\Application\Actions\Reports\SalesSummaryAction;
+use App\Application\Actions\Reports\StockAlertsAction;
+use App\Application\Actions\Reports\TopSellersAction;
+use App\Application\Actions\Sales\CreateSaleAction;
+use App\Application\Actions\Sales\GetSaleAction;
+use App\Application\Actions\Sales\ListSalesAction;
 use App\Application\Middleware\JwtMiddleware;
 use App\Application\Middleware\RoleMiddleware;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -108,6 +117,38 @@ return function (App $app) {
             ->add(JwtMiddleware::class);
 
         $group->post('/cash-registers/{id}/movements', AddMovementAction::class)
+            ->add(JwtMiddleware::class);
+
+        // Sales (admin + cashier)
+        $group->post('/sales', CreateSaleAction::class)
+            ->add(JwtMiddleware::class);
+
+        $group->get('/sales', ListSalesAction::class)
+            ->add(JwtMiddleware::class);
+
+        $group->get('/sales/{id}', GetSaleAction::class)
+            ->add(JwtMiddleware::class);
+
+        // Customers (admin + cashier read/create)
+        $group->get('/customers', ListCustomersAction::class)
+            ->add(JwtMiddleware::class);
+
+        $group->post('/customers', CreateCustomerAction::class)
+            ->add(JwtMiddleware::class);
+
+        $group->get('/customers/{id}', GetCustomerAction::class)
+            ->add(JwtMiddleware::class);
+
+        // Reports (admin only)
+        $group->get('/reports/top-sellers', TopSellersAction::class)
+            ->add(new RoleMiddleware(['admin']))
+            ->add(JwtMiddleware::class);
+
+        $group->get('/reports/sales-summary', SalesSummaryAction::class)
+            ->add(new RoleMiddleware(['admin']))
+            ->add(JwtMiddleware::class);
+
+        $group->get('/reports/stock-alerts', StockAlertsAction::class)
             ->add(JwtMiddleware::class);
     });
 };

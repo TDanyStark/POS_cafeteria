@@ -6,27 +6,32 @@ import { LoginPage } from '@/pages/Login/LoginPage'
 import { CategoriesPage } from '@/pages/Categories/CategoriesPage'
 import { ProductsPage } from '@/pages/Products/ProductsPage'
 import { CashRegisterPage } from '@/pages/CashRegister/CashRegisterPage'
+import { PosPage } from '@/pages/Pos/PosPage'
+import { SalesPage } from '@/pages/Sales/SalesPage'
+import { CustomersPage } from '@/pages/Customers/CustomersPage'
+import { DashboardPage } from '@/pages/Dashboard/DashboardPage'
+import { ReportsPage } from '@/pages/Reports/ReportsPage'
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
 
-      <Route element={<PrivateRoute />}>
+        <Route element={<PrivateRoute />}>
         <Route element={<AppLayout />}>
-          <Route path="/dashboard" element={<div className="text-lg font-medium">Dashboard - Fase 6</div>} />
+          <Route path="/dashboard" element={<DashboardPage />} />
 
           <Route element={<RoleRoute allowedRoles={['admin', 'cashier']} />}>
-            <Route path="/pos" element={<div className="text-lg font-medium">POS - Fase 5</div>} />
+            <Route path="/pos" element={<PosPage />} />
             <Route path="/cash-register" element={<CashRegisterPage />} />
-            <Route path="/sales" element={<div className="text-lg font-medium">Ventas - Fase 5</div>} />
+            <Route path="/sales" element={<SalesPage />} />
           </Route>
 
           <Route element={<RoleRoute allowedRoles={['admin']} />}>
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
-            <Route path="/customers" element={<div className="text-lg font-medium">Clientes - Fase 5</div>} />
-            <Route path="/reports" element={<div className="text-lg font-medium">Reportes - Fase 6</div>} />
+            <Route path="/customers" element={<CustomersPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
             <Route path="/users" element={<div className="text-lg font-medium">Usuarios - Fase 8</div>} />
             <Route path="/settings" element={<div className="text-lg font-medium">Configuración - Fase 7</div>} />
           </Route>

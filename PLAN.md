@@ -96,56 +96,56 @@ Estado general: **EN PROGRESO**
 ---
 
 ## Fase 5 — Ventas / Fast Checkout
-**Estado:** [ ] Pendiente  
+**Estado:** [x] Completada  
 **Depende de:** Fases 3 y 4
 
 ### Backend
-- [ ] Migración: tabla `customers`
-- [ ] Migración: tabla `sales`
-- [ ] Migración: tabla `sale_items`
-- [ ] `POST /api/v1/sales`:
+- [x] Migración: tabla `customers`
+- [x] Migración: tabla `sales`
+- [x] Migración: tabla `sale_items`
+- [x] `POST /api/v1/sales`:
   - Verifica caja abierta (via middleware) → `403` si no existe
   - Descuenta stock en transacción DB → rechaza venta completa si stock insuficiente
   - Registra `user_id` del cajero
   - Dispara email asíncrono tras confirmar
-- [ ] `GET /api/v1/sales` — paginado, filtros por fecha, método de pago, cajero
-- [ ] `GET /api/v1/sales/{id}` — detalle con items
-- [ ] `GET /api/v1/customers` — paginado
-- [ ] `POST /api/v1/customers`
-- [ ] `GET /api/v1/customers/{id}`
+- [x] `GET /api/v1/sales` — paginado, filtros por fecha, método de pago, cajero
+- [x] `GET /api/v1/sales/{id}` — detalle con items
+- [x] `GET /api/v1/customers` — paginado
+- [x] `POST /api/v1/customers`
+- [x] `GET /api/v1/customers/{id}`
 
 ### Frontend
-- [ ] Página `/pos` (Fast Checkout):
+- [x] Página `/pos` (Fast Checkout):
   - Grilla de productos filtrable por categoría
   - Carrito lateral con items, cantidades y subtotales
   - Selector de método de pago (Efectivo / Transferencia)
   - Calculadora de cambio (solo efectivo)
   - Campo opcional de cliente (buscar por nombre/teléfono o registrar nuevo)
   - Confirmación y reset del carrito
-- [ ] Página `/sales` — historial paginado con filtros en URL
-- [ ] Página `/customers` — historial de clientes
-- [ ] Types: `Sale`, `SaleItem`, `Customer`, `CartItem`
+- [x] Página `/sales` — historial paginado con filtros en URL
+- [x] Página `/customers` — historial de clientes
+- [x] Types: `Sale`, `SaleItem`, `Customer`, `CartItem`
 
 ---
 
 ## Fase 6 — Reportes & Dashboard
-**Estado:** [ ] Pendiente  
+**Estado:** [x] Completada  
 **Depende de:** Fase 5
 
 ### Backend
-- [ ] `GET /api/v1/reports/top-sellers` — productos más vendidos (con filtro de fecha)
-- [ ] `GET /api/v1/reports/sales-summary` — total ventas por periodo y método de pago
-- [ ] `GET /api/v1/reports/stock-alerts` — productos con stock <= min_stock
+- [x] `GET /api/v1/reports/top-sellers` — productos más vendidos (con filtro de fecha)
+- [x] `GET /api/v1/reports/sales-summary` — total ventas por periodo y método de pago
+- [x] `GET /api/v1/reports/stock-alerts` — productos con stock <= min_stock
 
 ### Frontend
-- [ ] Página `/dashboard`:
+- [x] Página `/dashboard`:
   - Resumen del día (ventas totales, efectivo vs transferencia)
   - Alertas de stock bajo
   - Últimas ventas del turno
-- [ ] Página `/reports`:
+- [x] Página `/reports`:
   - Top sellers con ranking visual
   - Consolidado financiero con filtro por rango de fechas
-- [ ] Types: `TopSeller`, `SalesSummary`, `StockAlert`
+- [x] Types: `TopSeller`, `SalesSummary`, `StockAlert`
 
 ---
 

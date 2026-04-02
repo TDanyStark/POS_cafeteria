@@ -46,10 +46,6 @@ export function CategoryCreatableSelect({ value, onChange, hasError }: Props) {
     }
   }
 
-  // Estilos que leen las variables CSS del tema en tiempo de ejecución
-  const getVar = (name: string) =>
-    getComputedStyle(document.documentElement).getPropertyValue(name).trim()
-
   const styles: StylesConfig<Option, false, GroupBase<Option>> = {
     control: (base, state) => ({
       ...base,

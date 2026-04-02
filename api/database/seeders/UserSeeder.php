@@ -9,7 +9,9 @@ final class UserSeeder extends AbstractSeed
     public function run(): void
     {
         // Truncate to allow idempotent re-seeding
+        $this->getAdapter()->execute('SET FOREIGN_KEY_CHECKS=0');
         $this->getAdapter()->execute('TRUNCATE TABLE users');
+        $this->getAdapter()->execute('SET FOREIGN_KEY_CHECKS=1');
 
         $users = [
             [

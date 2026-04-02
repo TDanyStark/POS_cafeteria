@@ -172,4 +172,13 @@ class MySqlProductRepository implements ProductRepositoryInterface
         ');
         return $stmt->execute(['id' => $id, 'quantity' => $quantity]);
     }
+
+    public function decrementStock(int $id, int $amount): bool
+    {
+        $stmt = $this->pdo->prepare('
+            UPDATE products SET stock = stock - :amount, updated_at = NOW() WHERE id = :id AND stock >= :amount
+        ');
+        $stmt->execute(['id' => $id, 'amount' => $amount]);
+        return $stmt->rowCount() > 0;
+    }
 }
