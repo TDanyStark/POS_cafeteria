@@ -107,7 +107,7 @@ export function UsersPage() {
               <TableHead>Rol</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Registro</TableHead>
-              <TableHead className="w-[120px]">Acciones</TableHead>
+              <TableHead className="w-30">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
