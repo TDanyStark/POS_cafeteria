@@ -98,6 +98,7 @@ export function UsersPage() {
       </div>
 
       <div className="rounded-lg border bg-card overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -174,6 +175,7 @@ export function UsersPage() {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {pagination && pagination.total_pages > 1 && (

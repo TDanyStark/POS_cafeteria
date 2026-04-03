@@ -77,7 +77,8 @@ export function CategoriesPage() {
         />
       </div>
 
-      <div className="rounded-lg border bg-card">
+      <div className="rounded-lg border bg-card overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -136,6 +137,7 @@ export function CategoriesPage() {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {pagination && pagination.total_pages > 1 && (

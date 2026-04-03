@@ -95,7 +95,7 @@ export function SalesPage() {
   const hasFilters = dateFrom || dateTo || paymentMethod
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="space-y-4">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">Historial de ventas</h1>
         <p className="text-sm text-muted-foreground">Consulta y filtra las ventas realizadas en el sistema.</p>
@@ -136,6 +136,7 @@ export function SalesPage() {
 
       {/* Table */}
       <div className="border border-border rounded-lg overflow-hidden bg-card">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -197,6 +198,7 @@ export function SalesPage() {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Pagination */}

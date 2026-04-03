@@ -67,7 +67,7 @@ export function ReportsPage() {
   const hasFilters = dateFrom || dateTo
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="space-y-4">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">Reportes</h1>
         <p className="text-sm text-muted-foreground">Analiza el desempeño de las ventas y productos.</p>

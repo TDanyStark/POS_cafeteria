@@ -5,6 +5,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$DeployStart = Get-Date
 
 # 1. Cargar Configuración
 $ConfigPath = "$PSScriptRoot\deploy.config.ps1"
@@ -141,4 +142,7 @@ if ($Full) {
 # 10. Limpieza Local
 if (Test-Path $TempPath) { Remove-Item -Recurse -Force $TempPath }
 
+$DeployEnd = Get-Date
+$Elapsed = $DeployEnd - $DeployStart
 Write-Host "¡Despliegue completado con éxito!" -ForegroundColor Green
+Write-Host "Tiempo total: $([math]::Floor($Elapsed.TotalMinutes))m $($Elapsed.Seconds)s" -ForegroundColor Cyan

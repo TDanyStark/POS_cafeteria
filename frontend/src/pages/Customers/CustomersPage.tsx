@@ -115,7 +115,7 @@ export function CustomersPage() {
   }
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Clientes</h1>
         <Button onClick={() => handleOpenModal()}>
@@ -125,7 +125,7 @@ export function CustomersPage() {
       </div>
 
       {/* Search */}
-      <div className="relative w-80">
+      <div className="relative w-full max-w-xs">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Buscar por nombre, teléfono..."
@@ -137,6 +137,7 @@ export function CustomersPage() {
 
       {/* Table */}
       <div className="border border-border rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -204,6 +205,7 @@ export function CustomersPage() {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Pagination */}

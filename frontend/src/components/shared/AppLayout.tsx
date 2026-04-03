@@ -121,7 +121,7 @@ export function AppLayout() {
           />
         )}
 
-        <main className="p-6">
+        <main className="p-3 sm:p-6">
           <Outlet />
         </main>
       </div>
