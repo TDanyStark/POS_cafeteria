@@ -116,9 +116,9 @@ export function CustomersPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold">Clientes</h1>
-        <Button onClick={() => handleOpenModal()}>
+        <Button className="w-full sm:w-auto" onClick={() => handleOpenModal()}>
           <UserPlus className="h-4 w-4 mr-2" />
           Nuevo cliente
         </Button>
@@ -136,8 +136,7 @@ export function CustomersPage() {
       </div>
 
       {/* Table */}
-      <div className="border border-border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="border border-border rounded-lg overflow-hidden min-w-0 max-w-full">
         <Table>
           <TableHeader>
             <TableRow>
@@ -205,16 +204,15 @@ export function CustomersPage() {
             )}
           </TableBody>
         </Table>
-        </div>
       </div>
 
       {/* Pagination */}
       {data && data.pagination.total_pages > 1 && (
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
           <span className="text-muted-foreground">
             {data.pagination.total} clientes
           </span>
-          <div className="flex gap-2">
+          <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
             <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
               Anterior
             </Button>

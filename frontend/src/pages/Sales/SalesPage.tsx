@@ -102,7 +102,7 @@ export function SalesPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 items-end bg-card p-4 rounded-lg border">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end bg-card p-4 rounded-lg border">
         <div className="space-y-1.5">
           <p className="text-xs font-medium text-muted-foreground">Rango de fechas</p>
           <DateRangePicker 
@@ -115,7 +115,7 @@ export function SalesPage() {
         <div className="space-y-1.5">
           <p className="text-xs font-medium text-muted-foreground">Método de pago</p>
           <Select value={(paymentMethod || 'all') as string} onValueChange={(v) => setParam('payment_method', v === 'all' ? '' : v)}>
-            <SelectTrigger className="w-44 h-9">
+            <SelectTrigger className="w-full sm:w-44 h-9">
               <SelectValue placeholder="Todos" />
             </SelectTrigger>
             <SelectContent>
@@ -135,8 +135,7 @@ export function SalesPage() {
       </div>
 
       {/* Table */}
-      <div className="border border-border rounded-lg overflow-hidden bg-card">
-        <div className="overflow-x-auto">
+      <div className="border border-border rounded-lg overflow-hidden bg-card min-w-0 max-w-full">
         <Table>
           <TableHeader>
             <TableRow>
@@ -198,16 +197,15 @@ export function SalesPage() {
             )}
           </TableBody>
         </Table>
-        </div>
       </div>
 
       {/* Pagination */}
       {data && data.pagination.total_pages > 1 && (
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
           <span className="text-muted-foreground">
             {data.pagination.total} ventas
           </span>
-          <div className="flex gap-2">
+          <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
             <Button
               variant="outline"
               size="sm"

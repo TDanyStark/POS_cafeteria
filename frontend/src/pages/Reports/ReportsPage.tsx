@@ -67,14 +67,14 @@ export function ReportsPage() {
   const hasFilters = dateFrom || dateTo
 
   return (
-    <div className="space-y-4">
+      <div className="space-y-4 px-0">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">Reportes</h1>
         <p className="text-sm text-muted-foreground">Analiza el desempeño de las ventas y productos.</p>
       </div>
 
       {/* Date Filters */}
-      <div className="flex flex-wrap gap-4 items-end bg-card p-4 rounded-lg border">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end bg-card p-4 rounded-lg border">
         <div className="space-y-1.5">
           <p className="text-xs font-medium text-muted-foreground">Rango de fechas</p>
           <DateRangePicker 
@@ -93,8 +93,8 @@ export function ReportsPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="top-sellers" className="gap-2">
             <Trophy className="h-4 w-4" />
             Top Vendidos
@@ -208,11 +208,11 @@ function TopSellersList({
       </CardContent>
 
       {data.pagination.total_pages > 1 && (
-        <div className="px-6 pb-6 flex items-center justify-between text-sm text-muted-foreground">
+        <div className="px-6 pb-6 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span>
             Mostrando {data.data.length} de {data.pagination.total} productos
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
             <Button
               variant="outline"
               size="sm"

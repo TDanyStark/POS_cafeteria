@@ -63,18 +63,18 @@ export function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Usuarios</h1>
           <p className="text-sm text-muted-foreground">Gestiona cajeros, accesos y estado de cuenta</p>
         </div>
-        <Button onClick={() => setFormOpen(true)}>
+        <Button className="w-full sm:w-auto" onClick={() => setFormOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Nuevo cajero
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <div className="relative w-full max-w-xs">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -86,7 +86,7 @@ export function UsersPage() {
         </div>
 
         <Select value={activeParam ?? 'all'} onValueChange={(value) => setParam('active', value === 'all' ? null : value)}>
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-full sm:w-44">
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
@@ -97,8 +97,7 @@ export function UsersPage() {
         </Select>
       </div>
 
-      <div className="rounded-lg border bg-card overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="rounded-lg border bg-card overflow-hidden min-w-0 max-w-full">
         <Table>
           <TableHeader>
             <TableRow>
@@ -175,15 +174,14 @@ export function UsersPage() {
             )}
           </TableBody>
         </Table>
-        </div>
       </div>
 
       {pagination && pagination.total_pages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span>
             Mostrando {data?.data.length ?? 0} de {pagination.total} cajeros
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
             <Button
               variant="outline"
               size="sm"

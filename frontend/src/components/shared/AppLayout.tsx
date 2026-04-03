@@ -103,7 +103,7 @@ export function AppLayout() {
         </div>
       </aside>
 
-      <div className="flex-1 lg:ml-64">
+      <div className="flex-1 min-w-0 lg:ml-64">
         <header className="sticky top-0 z-40 bg-card border-b px-4 py-3 lg:hidden">
           <Button
             variant="ghost"
@@ -121,7 +121,7 @@ export function AppLayout() {
           />
         )}
 
-        <main className="p-3 sm:p-6">
+        <main className="min-w-0 p-3 sm:p-6">
           <Outlet />
         </main>
       </div>

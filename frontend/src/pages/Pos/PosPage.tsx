@@ -74,7 +74,7 @@ export function PosPage() {
           <ShoppingCart className="h-4 w-4" />
           Carrito
           {cartCount > 0 && (
-            <span className="absolute top-1.5 right-[calc(50%-28px)] bg-primary text-primary-foreground text-[10px] rounded-full w-4 h-4 flex items-center justify-center leading-none">
+            <span className="absolute top-1.5 right-[calc(50%-58px)] bg-primary text-primary-foreground text-[10px] rounded-full w-4 h-4 flex items-center justify-center leading-none">
               {cartCount}
             </span>
           )}

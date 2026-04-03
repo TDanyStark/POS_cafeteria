@@ -56,14 +56,14 @@ export function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Categorías</h1>
           <p className="text-sm text-muted-foreground">
             Gestiona las categorías del catálogo
           </p>
         </div>
-        <Button onClick={() => setFormOpen(true)}>
+        <Button className="w-full sm:w-auto" onClick={() => setFormOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Nueva Categoría
         </Button>
@@ -77,8 +77,7 @@ export function CategoriesPage() {
         />
       </div>
 
-      <div className="rounded-lg border bg-card overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="rounded-lg border bg-card overflow-hidden min-w-0 max-w-full">
         <Table>
           <TableHeader>
             <TableRow>
@@ -137,15 +136,14 @@ export function CategoriesPage() {
             )}
           </TableBody>
         </Table>
-        </div>
       </div>
 
       {pagination && pagination.total_pages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span>
             Mostrando {categories?.data.length ?? 0} de {pagination.total} categorias
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
             <Button
               variant="outline"
               size="sm"

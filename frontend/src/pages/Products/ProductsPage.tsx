@@ -80,24 +80,24 @@ export function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Productos</h1>
           <p className="text-sm text-muted-foreground">
             Gestiona el catálogo y stock de productos
           </p>
         </div>
-        <Button onClick={() => setFormOpen(true)}>
+        <Button className="w-full sm:w-auto" onClick={() => setFormOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Nuevo Producto
         </Button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Input
           placeholder="Buscar por nombre..."
-          className="max-w-xs"
+          className="w-full sm:max-w-xs"
           defaultValue={search}
           onChange={(e) => setParam('search', e.target.value)}
         />
@@ -106,7 +106,7 @@ export function ProductsPage() {
           value={categoryId ? String(categoryId) : 'all'}
           onValueChange={(v) => setParam('category_id', v === 'all' ? null : v)}
         >
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="Todas las categorías" />
           </SelectTrigger>
           <SelectContent>
@@ -123,7 +123,7 @@ export function ProductsPage() {
           value={activeParam ?? 'all'}
           onValueChange={(v) => setParam('active', v === 'all' ? null : v)}
         >
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="w-full sm:w-36">
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
@@ -135,8 +135,7 @@ export function ProductsPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border bg-card overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="rounded-lg border bg-card overflow-hidden min-w-0 max-w-full">
         <Table>
           <TableHeader>
             <TableRow>
@@ -235,16 +234,15 @@ export function ProductsPage() {
             )}
           </TableBody>
         </Table>
-        </div>
       </div>
 
       {/* Pagination */}
       {pagination && pagination.total_pages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span>
             Mostrando {productsData?.data.length ?? 0} de {pagination.total} productos
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
             <Button
               variant="outline"
               size="sm"
