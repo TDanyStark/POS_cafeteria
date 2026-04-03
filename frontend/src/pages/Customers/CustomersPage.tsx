@@ -17,6 +17,7 @@ import { useCustomers, useCreateCustomer, useUpdateCustomer } from '@/hooks/useC
 import { Search, UserPlus, Mail, Phone, Edit2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Customer } from '@/types/sales'
+import { formatDateOnly } from '@/utils/format'
 
 export function CustomersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -187,7 +188,7 @@ export function CustomersPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {new Date(customer.created_at).toLocaleDateString()}
+                    {formatDateOnly(customer.created_at)}
                   </TableCell>
                   <TableCell>
                     <Button

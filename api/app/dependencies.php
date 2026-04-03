@@ -56,20 +56,33 @@ return function (ContainerBuilder $containerBuilder) {
             return $logger;
         },
 
-        PDO::class => function () {
+        PDO::class => function (ContainerInterface $c) {
             $host   = $_ENV['DB_HOST'];
             $port   = $_ENV['DB_PORT'];
             $dbname = $_ENV['DB_NAME'];
             $user   = $_ENV['DB_USER'];
             $pass   = $_ENV['DB_PASS'];
+            $settings = $c->get(SettingsInterface::class);
+            $appTimezone = (string) $settings->get('appTimezone');
 
             $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4";
 
-            return new PDO($dsn, $user, $pass, [
+            $pdo = new PDO($dsn, $user, $pass, [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ]);
+
+            $offsetSeconds = (new \DateTimeImmutable('now', new \DateTimeZone($appTimezone)))->getOffset();
+            $offsetPrefix = $offsetSeconds >= 0 ? '+' : '-';
+            $offsetHours = str_pad((string) intdiv(abs($offsetSeconds), 3600), 2, '0', STR_PAD_LEFT);
+            $offsetMinutes = str_pad((string) intdiv(abs($offsetSeconds) % 3600, 60), 2, '0', STR_PAD_LEFT);
+            $mysqlSessionTimezone = sprintf('%s%s:%s', $offsetPrefix, $offsetHours, $offsetMinutes);
+
+            $stmt = $pdo->prepare('SET time_zone = :timezone');
+            $stmt->execute(['timezone' => $mysqlSessionTimezone]);
+
+            return $pdo;
         },
 
         // User

@@ -16,6 +16,9 @@ require __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
+$appTimezone = $_ENV['APP_TIMEZONE'] ?? 'America/Bogota';
+date_default_timezone_set($appTimezone);
+
 // Instantiate PHP-DI ContainerBuilder
 $containerBuilder = new ContainerBuilder();
 

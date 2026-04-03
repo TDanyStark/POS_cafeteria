@@ -9,18 +9,13 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import type { CashRegister } from '@/types/cashRegister'
+import { formatDate } from '@/utils/format'
 
 interface ForceCloseModalProps {
   open: boolean
   register: CashRegister
   onProceedToClose: () => void
 }
-
-const formatDateTime = (iso: string) =>
-  new Intl.DateTimeFormat('es-CO', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(iso))
 
 /**
  * Shown when user has a previous open register that must be closed before opening a new one.
@@ -40,7 +35,7 @@ export function ForceCloseModal({ open, register, onProceedToClose }: ForceClose
           <AlertDialogDescription className="pt-2">
             Tienes una caja abierta desde el{' '}
             <span className="font-medium text-foreground">
-              {formatDateTime(register.opened_at)}
+              {formatDate(register.opened_at)}
             </span>
             . Debes cerrarla antes de abrir un nuevo turno.
           </AlertDialogDescription>

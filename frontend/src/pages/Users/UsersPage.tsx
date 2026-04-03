@@ -24,6 +24,7 @@ import { useUsers } from '@/hooks/useUsers'
 import { UserFormModal } from './UserFormModal'
 import { DeleteUserDialog } from './DeleteUserDialog'
 import type { UserListItem } from '@/types/users'
+import { formatDateOnly } from '@/utils/format'
 
 export function UsersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -137,7 +138,7 @@ export function UsersPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {new Date(user.created_at).toLocaleDateString()}
+                    {formatDateOnly(user.created_at)}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">

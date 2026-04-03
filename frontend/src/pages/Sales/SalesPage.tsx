@@ -19,6 +19,7 @@ import { DateRangePicker } from '@/components/shared/DateRangePicker'
 import type { PaymentMethod, SaleFilters } from '@/types/sales'
 import type { DateRange } from 'react-day-picker'
 import { Eye, RotateCcw } from 'lucide-react'
+import { formatDate } from '@/utils/format'
 
 export function SalesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -170,7 +171,7 @@ export function SalesPage() {
                 <TableRow key={sale.id} className="cursor-pointer hover:bg-muted/50">
                   <TableCell className="font-mono text-sm">#{sale.id}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {new Date(sale.created_at).toLocaleString()}
+                    {formatDate(sale.created_at)}
                   </TableCell>
                   <TableCell className="text-sm">{sale.cashier_name}</TableCell>
                   <TableCell className="text-sm">{sale.customer_name ?? <span className="text-muted-foreground italic">Anónimo</span>}</TableCell>

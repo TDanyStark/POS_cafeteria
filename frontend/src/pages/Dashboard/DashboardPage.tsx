@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useDailySummary, useLatestSales, useStockAlerts } from '@/hooks/useDashboard'
 import { Link } from 'react-router-dom'
+import { formatTime } from '@/utils/format'
 
 export function DashboardPage() {
   const { data: summary, isLoading: summaryLoading } = useDailySummary()
@@ -135,7 +136,7 @@ export function DashboardPage() {
                         </span>
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(sale.created_at).toLocaleTimeString()}
+                        {formatTime(sale.created_at)}
                       </p>
                     </div>
                     <div className="text-right">

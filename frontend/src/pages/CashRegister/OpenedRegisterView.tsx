@@ -15,24 +15,12 @@ import {
 import { AddMovementModal } from './AddMovementModal'
 import { CloseRegisterModal } from './CloseRegisterModal'
 import type { CashRegister } from '@/types/cashRegister'
+import { formatCurrency, formatDate } from '@/utils/format'
 
 interface OpenedRegisterViewProps {
   register: CashRegister
   isLoading: boolean
 }
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-  }).format(amount)
-
-const formatDateTime = (iso: string) =>
-  new Intl.DateTimeFormat('es-CO', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(iso))
 
 export function OpenedRegisterView({ register, isLoading }: OpenedRegisterViewProps) {
   const [movementOpen, setMovementOpen] = useState(false)
@@ -73,7 +61,7 @@ export function OpenedRegisterView({ register, isLoading }: OpenedRegisterViewPr
           <h2 className="text-xl font-semibold text-foreground">Caja abierta</h2>
           <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
             <Clock className="h-3.5 w-3.5" />
-            Apertura: {formatDateTime(register.opened_at)}
+            Apertura: {formatDate(register.opened_at)}
           </p>
         </div>
         <div className="flex gap-2">
@@ -202,7 +190,7 @@ export function OpenedRegisterView({ register, isLoading }: OpenedRegisterViewPr
                       {formatCurrency(mov.amount)}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
-                      {formatDateTime(mov.created_at)}
+                      {formatDate(mov.created_at)}
                     </TableCell>
                   </TableRow>
                 ))

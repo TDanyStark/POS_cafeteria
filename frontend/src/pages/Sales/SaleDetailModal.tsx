@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSale } from '@/hooks/useSales'
+import { formatDate } from '@/utils/format'
 
 interface SaleDetailModalProps {
   saleId: number | null
@@ -39,7 +40,7 @@ export function SaleDetailModal({ saleId, onClose }: SaleDetailModalProps) {
               </div>
               <div>
                 <p className="text-muted-foreground">Fecha</p>
-                <p className="font-medium">{new Date(sale.created_at).toLocaleString()}</p>
+                <p className="font-medium">{formatDate(sale.created_at)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Cliente</p>

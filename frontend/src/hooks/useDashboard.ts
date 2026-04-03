@@ -3,10 +3,10 @@ import api from '@/lib/axios'
 import type { ApiResponse, PaginatedResponse } from '@/types/catalog'
 import type { Sale } from '@/types/sales'
 import type { DailySummary, StockAlert } from '@/types/reports'
+import { getTodayDateStringInTimezone } from '@/utils/format'
 
 function getTodayDateString(): string {
-  const today = new Date()
-  return today.toISOString().split('T')[0]
+  return getTodayDateStringInTimezone()
 }
 
 export function useDailySummary() {
