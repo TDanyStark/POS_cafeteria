@@ -33,3 +33,5 @@ backend/storage/
 # Testing / coverage
 coverage/
 .phpunit.result.cache
+
+temp_deploy/
