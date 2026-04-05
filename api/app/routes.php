@@ -41,6 +41,7 @@ use App\Application\Middleware\RoleMiddleware;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
+use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 
 return function (App $app) {
     $container = $app->getContainer();
@@ -49,9 +50,9 @@ return function (App $app) {
         return $response;
     });
 
-    $app->group('/api/v1', function (\Slim\Interfaces\RouteCollectorProxyInterface $group) use ($container) {
+    $app->group('/api/v1', function (Group $group) use ($container) {
 
-        // Health check
+        // Health check (público)
         $group->get('/health', function (Request $request, Response $response) use ($container) {
             try {
                 /** @var PDO $pdo */
@@ -65,135 +66,86 @@ return function (App $app) {
             }
 
             $response->getBody()->write(json_encode($data));
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus($status);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus($status);
         });
 
-        // Auth
+        // Auth (público)
         $group->post('/auth/login', LoginAction::class);
 
-        $group->get('/auth/me', MeAction::class)
-            ->add(JwtMiddleware::class);
+        // Rutas autenticadas (JWT requerido)
+        $group->group('', function (Group $auth) {
 
-        // Categories (admin only for write, all auth for read)
-        $group->get('/categories', ListCategoriesAction::class)
-            ->add(JwtMiddleware::class);
+            $auth->get('/auth/me', MeAction::class);
 
-        $group->post('/categories', CreateCategoryAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
+            // Categories
+            $auth->get('/categories', ListCategoriesAction::class);
 
-        $group->put('/categories/{id}', UpdateCategoryAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
+            // Products
+            $auth->get('/products', ListProductsAction::class);
 
-        $group->delete('/categories/{id}', DeleteCategoryAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
+            // Cash Registers (admin + cajero)
+            $auth->group('/cash-registers', function (Group $cashReg) {
+                $cashReg->get('', ListCashRegistersAction::class);
+                $cashReg->post('/open', OpenCashRegisterAction::class);
+                $cashReg->get('/active', GetActiveCashRegisterAction::class);
+                $cashReg->get('/{id}', GetCashRegisterAction::class);
+                $cashReg->post('/{id}/close', CloseCashRegisterAction::class);
+                $cashReg->post('/{id}/movements', AddMovementAction::class);
+            });
 
-        // Products (admin only for write, all auth for read)
-        $group->get('/products', ListProductsAction::class)
-            ->add(JwtMiddleware::class);
+            // Sales (admin + cajero)
+            $auth->group('/sales', function (Group $sales) {
+                $sales->post('', CreateSaleAction::class);
+                $sales->get('', ListSalesAction::class);
+                $sales->get('/{id}', GetSaleAction::class);
+            });
 
-        $group->post('/products', CreateProductAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
+            // Customers (admin + cajero)
+            $auth->group('/customers', function (Group $customers) {
+                $customers->get('', ListCustomersAction::class);
+                $customers->post('', CreateCustomerAction::class);
+                $customers->get('/{id}', GetCustomerAction::class);
+                $customers->put('/{id}', UpdateCustomerAction::class);
+            });
 
-        $group->put('/products/{id}', UpdateProductAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
+            // Stock alerts (admin + cajero)
+            $auth->get('/reports/stock-alerts', StockAlertsAction::class);
 
-        $group->delete('/products/{id}', DeleteProductAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
+            // Rutas solo para admin
+            $auth->group('', function (Group $admin) {
 
-        $group->patch('/products/{id}/stock', UpdateProductStockAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
+                // Categories (escritura)
+                $admin->post('/categories', CreateCategoryAction::class);
+                $admin->put('/categories/{id}', UpdateCategoryAction::class);
+                $admin->delete('/categories/{id}', DeleteCategoryAction::class);
 
-        // Cash Registers (admin + cashier)
-        $group->post('/cash-registers/open', OpenCashRegisterAction::class)
-            ->add(JwtMiddleware::class);
+                // Products (escritura)
+                $admin->post('/products', CreateProductAction::class);
+                $admin->put('/products/{id}', UpdateProductAction::class);
+                $admin->delete('/products/{id}', DeleteProductAction::class);
+                $admin->patch('/products/{id}/stock', UpdateProductStockAction::class);
 
-        $group->get('/cash-registers', ListCashRegistersAction::class)
-            ->add(JwtMiddleware::class);
+                // Reports
+                $admin->get('/reports/top-sellers', TopSellersAction::class);
+                $admin->get('/reports/sales-summary', SalesSummaryAction::class);
 
-        $group->post('/cash-registers/{id}/close', CloseCashRegisterAction::class)
-            ->add(JwtMiddleware::class);
+                // Settings
+                $admin->group('/settings', function (Group $settings) {
+                    $settings->get('/email', GetEmailSettingsAction::class);
+                    $settings->put('/email', UpdateEmailSettingsAction::class);
+                    $settings->post('/email/test', SendTestEmailAction::class);
+                });
 
-        $group->get('/cash-registers/active', GetActiveCashRegisterAction::class)
-            ->add(JwtMiddleware::class);
+                // Users
+                $admin->group('/users', function (Group $users) {
+                    $users->get('', ListUsersAction::class);
+                    $users->post('', CreateUserAction::class);
+                    $users->put('/{id}', UpdateUserAction::class);
+                    $users->delete('/{id}', DeleteUserAction::class);
+                });
 
-        $group->get('/cash-registers/{id}', GetCashRegisterAction::class)
-            ->add(JwtMiddleware::class);
+            })->add(new RoleMiddleware(['admin']));
 
-        $group->post('/cash-registers/{id}/movements', AddMovementAction::class)
-            ->add(JwtMiddleware::class);
-
-        // Sales (admin + cashier)
-        $group->post('/sales', CreateSaleAction::class)
-            ->add(JwtMiddleware::class);
-
-        $group->get('/sales', ListSalesAction::class)
-            ->add(JwtMiddleware::class);
-
-        $group->get('/sales/{id}', GetSaleAction::class)
-            ->add(JwtMiddleware::class);
-
-        // Customers (admin + cashier read/create)
-        $group->get('/customers', ListCustomersAction::class)
-            ->add(JwtMiddleware::class);
-
-        $group->post('/customers', CreateCustomerAction::class)
-            ->add(JwtMiddleware::class);
-
-        $group->put('/customers/{id}', UpdateCustomerAction::class)
-            ->add(JwtMiddleware::class);
-
-        $group->get('/customers/{id}', GetCustomerAction::class)
-            ->add(JwtMiddleware::class);
-
-        // Reports (admin only)
-        $group->get('/reports/top-sellers', TopSellersAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
-
-        $group->get('/reports/sales-summary', SalesSummaryAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
-
-        $group->get('/reports/stock-alerts', StockAlertsAction::class)
-            ->add(JwtMiddleware::class);
-
-        // Settings (admin only)
-        $group->get('/settings/email', GetEmailSettingsAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
-
-        $group->put('/settings/email', UpdateEmailSettingsAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
-
-        $group->post('/settings/email/test', SendTestEmailAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
-
-        // Users (admin only)
-        $group->get('/users', ListUsersAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
-
-        $group->post('/users', CreateUserAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
-
-        $group->put('/users/{id}', UpdateUserAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
-
-        $group->delete('/users/{id}', DeleteUserAction::class)
-            ->add(new RoleMiddleware(['admin']))
-            ->add(JwtMiddleware::class);
+        })->add(JwtMiddleware::class);
     });
 };
