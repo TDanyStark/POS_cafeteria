@@ -16,6 +16,7 @@ const CustomersPage = lazy(() => import('@/pages/Customers/CustomersPage').then(
 const ReportsPage = lazy(() => import('@/pages/Reports/ReportsPage').then(m => ({ default: m.ReportsPage })))
 const UsersPage = lazy(() => import('@/pages/Users/UsersPage').then(m => ({ default: m.UsersPage })))
 const SettingsPage = lazy(() => import('@/pages/Settings/SettingsPage').then(m => ({ default: m.SettingsPage })))
+const DebtorsPage = lazy(() => import('@/pages/Debtors/DebtorsPage').then(m => ({ default: m.DebtorsPage })))
 
 function PageLoader() {
   return (
@@ -42,6 +43,7 @@ function App() {
               <Route path="/pos" element={<PosPage />} />
               <Route path="/cash-register" element={<CashRegisterPage />} />
               <Route path="/sales" element={<SalesPage />} />
+              <Route path="/debtors" element={<DebtorsPage />} />
             </Route>
 
             <Route element={<RoleRoute allowedRoles={['admin']} />}>

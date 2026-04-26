@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   Coffee,
+  UserMinus,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -24,6 +25,7 @@ const adminNavItems = [
   { icon: ShoppingCart, label: 'POS', path: '/pos' },
   { icon: Wallet, label: 'Caja', path: '/cash-register' },
   { icon: Receipt, label: 'Ventas', path: '/sales' },
+  { icon: UserMinus, label: 'Deudores', path: '/debtors' },
   { icon: Package, label: 'Productos', path: '/products' },
   { icon: Tags, label: 'Categorías', path: '/categories' },
   { icon: Users, label: 'Clientes', path: '/customers' },
@@ -37,6 +39,7 @@ const cashierNavItems = [
   { icon: ShoppingCart, label: 'POS', path: '/pos' },
   { icon: Wallet, label: 'Caja', path: '/cash-register' },
   { icon: Receipt, label: 'Ventas', path: '/sales' },
+  { icon: UserMinus, label: 'Deudores', path: '/debtors' },
 ]
 
 export function AppLayout() {
