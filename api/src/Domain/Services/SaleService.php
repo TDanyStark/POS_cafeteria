@@ -8,6 +8,8 @@ use App\Domain\Repositories\CashRegisterRepositoryInterface;
 use App\Domain\Repositories\CustomerRepositoryInterface;
 use App\Domain\Repositories\ProductRepositoryInterface;
 use App\Domain\Repositories\SaleRepositoryInterface;
+use App\Domain\Repositories\DebtRepositoryInterface;
+use App\Application\Settings\SettingsInterface;
 use PDO;
 
 class SaleService
@@ -17,21 +19,34 @@ class SaleService
         private ProductRepositoryInterface $productRepository,
         private CashRegisterRepositoryInterface $cashRegisterRepository,
         private CustomerRepositoryInterface $customerRepository,
+        private DebtRepositoryInterface $debtRepository,
+        private SettingsInterface $settings,
         private PDO $pdo
     ) {}
 
+    private function isGlobalScope(): bool
+    {
+        return $this->settings->get('cashRegisterScope') === 'global';
+    }
+
     /**
      * Create a new sale.
-     * - Verifies open cash register.
+     * - Verifies open cash register (global or user-specific based on setting).
      * - Deducts stock in a DB transaction (rejects full sale if insufficient stock).
      * - Registers the sale with items.
+     * - In global mode: uses the single open register regardless of user.
+     * - In personal mode: uses the user's open register.
      */
     public function create(int $userId, array $data): array
     {
-        // Validate open cash register
-        $cashRegister = $this->cashRegisterRepository->findOpenByUserId($userId);
+        if ($this->isGlobalScope()) {
+            $cashRegister = $this->cashRegisterRepository->findOpenGlobal();
+        } else {
+            $cashRegister = $this->cashRegisterRepository->findOpenByUserId($userId);
+        }
+
         if ($cashRegister === null) {
-            throw new \RuntimeException('No tienes una caja abierta. Debes abrir caja antes de realizar ventas.', 403);
+            throw new \RuntimeException('No hay una caja abierta. Debes abrir caja antes de realizar ventas.', 403);
         }
 
         // Validate items
@@ -45,7 +60,9 @@ class SaleService
         }
 
         $amountPaid = isset($data['amount_paid']) ? (float) $data['amount_paid'] : 0.0;
-        if ($amountPaid <= 0) {
+        $createDebt = !empty($data['create_debt']);
+
+        if ($amountPaid <= 0 && !$createDebt) {
             throw new \InvalidArgumentException('El monto pagado debe ser mayor a 0.');
         }
 
@@ -57,6 +74,11 @@ class SaleService
                 throw new \InvalidArgumentException('El cliente especificado no existe.');
             }
             $customerId = (int) $data['customer_id'];
+        }
+
+        // If creating debt, customer is required
+        if ($createDebt && $customerId === null) {
+            throw new \InvalidArgumentException('Debes seleccionar un cliente para crear una deuda.');
         }
 
         // Resolve and validate items
@@ -96,14 +118,19 @@ class SaleService
             ];
         }
 
-        // Validate amount paid covers total
-        if ($amountPaid < $total) {
+        // Validate amount paid covers total (unless creating debt)
+        if (!$createDebt && $amountPaid < $total) {
             throw new \InvalidArgumentException(
                 "El monto pagado ({$amountPaid}) es insuficiente para cubrir el total ({$total})."
             );
         }
 
-        $changeAmount = $paymentMethod === 'cash' ? $amountPaid - $total : 0.0;
+        // If creating debt, amount_paid can be 0 or partial
+        if ($createDebt && $amountPaid < 0) {
+            throw new \InvalidArgumentException('El monto pagado no puede ser negativo.');
+        }
+
+        $changeAmount = $paymentMethod === 'cash' && !$createDebt ? $amountPaid - $total : 0.0;
         $notes        = isset($data['notes']) ? trim((string) $data['notes']) : null;
 
         // Execute in a transaction
@@ -135,6 +162,17 @@ class SaleService
                 $this->productRepository->decrementStock(
                     $item['product_id'],
                     $item['quantity']
+                );
+            }
+
+            // Create debt if requested
+            $debtId = null;
+            if ($createDebt && $customerId !== null && $amountPaid < $total) {
+                $debtId = $this->debtRepository->create(
+                    $customerId,
+                    $saleId,
+                    $total,
+                    $total - $amountPaid
                 );
             }
 

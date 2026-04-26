@@ -61,6 +61,22 @@ Ejecuta estos comandos desde una terminal de PowerShell en la raíz del proyecto
 
 ---
 
+### Configuración de Caja
+
+Por defecto (`CASH_REGISTER_SCOPE=personal`), cada empleado tiene su propia caja. Para operar con una **caja global compartida**:
+
+```bash
+# En api/.env
+CASH_REGISTER_SCOPE=global
+```
+
+En modo global:
+- Solo existe una caja abierta a nivel aplicación.
+- Un usuario puede abrirla y cualquier otro usuario puede cerrarla.
+- Las ventas se registran en la caja abierta, independientemente de quién la abrió.
+
+---
+
 ## Estructura del Proyecto
 
 - `/api`: Backend Slim PHP.

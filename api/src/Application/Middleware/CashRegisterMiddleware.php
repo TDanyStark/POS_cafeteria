@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Middleware;
 
 use App\Domain\Repositories\CashRegisterRepositoryInterface;
+use App\Application\Settings\SettingsInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
@@ -15,15 +16,25 @@ class CashRegisterMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private CashRegisterRepositoryInterface $cashRegisterRepository,
+        private SettingsInterface $settings,
         private ResponseFactory $responseFactory
     ) {}
+
+    private function isGlobalScope(): bool
+    {
+        return $this->settings->get('cashRegisterScope') === 'global';
+    }
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         $user   = $request->getAttribute('user');
         $userId = (int) ($user['id'] ?? 0);
 
-        $register = $this->cashRegisterRepository->findOpenByUserId($userId);
+        if ($this->isGlobalScope()) {
+            $register = $this->cashRegisterRepository->findOpenGlobal();
+        } else {
+            $register = $this->cashRegisterRepository->findOpenByUserId($userId);
+        }
 
         if ($register === null) {
             $payload = [

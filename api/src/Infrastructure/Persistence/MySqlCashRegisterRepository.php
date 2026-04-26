@@ -58,9 +58,27 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
         return $row ?: null;
     }
 
+    public function findOpenGlobal(): ?array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT * FROM cash_registers
+            WHERE status = 'open'
+            ORDER BY opened_at DESC
+            LIMIT 1
+        ");
+        $stmt->execute();
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
     public function findLastOpenRegister(int $userId): ?array
     {
         return $this->findOpenByUserId($userId);
+    }
+
+    public function findLastOpenGlobal(): ?array
+    {
+        return $this->findOpenGlobal();
     }
 
     public function findById(int $id): ?array

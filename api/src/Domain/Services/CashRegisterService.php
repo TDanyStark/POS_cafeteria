@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace App\Domain\Services;
 
 use App\Domain\Repositories\CashRegisterRepositoryInterface;
+use App\Application\Settings\SettingsInterface;
 
 class CashRegisterService
 {
     public function __construct(
-        private CashRegisterRepositoryInterface $cashRegisterRepository
+        private CashRegisterRepositoryInterface $cashRegisterRepository,
+        private SettingsInterface $settings
     ) {}
+
+    private function isGlobalScope(): bool
+    {
+        return $this->settings->get('cashRegisterScope') === 'global';
+    }
 
     /**
      * List all cash registers with filters.
@@ -22,7 +29,9 @@ class CashRegisterService
 
     /**
      * Open a new cash register for the given user.
-     * Throws if there is already an open register for this user.
+     * Throws if there is already an open register.
+     * In global mode: checks if ANY register is open.
+     * In personal mode: checks if THIS USER has an open register.
      */
     public function open(int $userId, float $initialAmount): array
     {
@@ -30,13 +39,17 @@ class CashRegisterService
             throw new \InvalidArgumentException('El monto inicial no puede ser negativo.');
         }
 
-        $existing = $this->cashRegisterRepository->findLastOpenRegister($userId);
+        if ($this->isGlobalScope()) {
+            $existing = $this->cashRegisterRepository->findOpenGlobal();
+        } else {
+            $existing = $this->cashRegisterRepository->findLastOpenRegister($userId);
+        }
 
         if ($existing !== null) {
-            throw new \RuntimeException(
-                'Ya existe una caja abierta para este usuario. Debe cerrarla antes de abrir una nueva.',
-                409
-            );
+            $msg = $this->isGlobalScope()
+                ? 'Ya existe una caja abierta en el sistema. Debe cerrarla antes de abrir una nueva.'
+                : 'Ya existe una caja abierta para este usuario. Debe cerrarla antes de abrir una nueva.';
+            throw new \RuntimeException($msg, 409);
         }
 
         $id = $this->cashRegisterRepository->create($userId, $initialAmount);
@@ -46,8 +59,8 @@ class CashRegisterService
 
     /**
      * Close a cash register.
-     * Calculates: final_amount = initial_amount + sum(in) - sum(out)
-     * Difference = declared_amount - final_amount
+     * In global mode: any user can close any open register.
+     * In personal mode: only the owner can close their register.
      */
     public function close(int $registerId, int $userId, float $declaredAmount): array
     {
@@ -61,7 +74,7 @@ class CashRegisterService
             throw new \InvalidArgumentException('Esta caja ya fue cerrada.');
         }
 
-        if ((int) $register['user_id'] !== $userId) {
+        if (!$this->isGlobalScope() && (int) $register['user_id'] !== $userId) {
             throw new \RuntimeException('No tienes permiso para cerrar esta caja.', 403);
         }
 
@@ -81,11 +94,17 @@ class CashRegisterService
     }
 
     /**
-     * Get the active (open) cash register for the given user.
+     * Get the active (open) cash register.
+     * In global mode: returns the single open register (ignores userId).
+     * In personal mode: returns the open register for the given user.
      */
     public function getActive(int $userId): ?array
     {
-        $register = $this->cashRegisterRepository->findOpenByUserId($userId);
+        if ($this->isGlobalScope()) {
+            $register = $this->cashRegisterRepository->findOpenGlobal();
+        } else {
+            $register = $this->cashRegisterRepository->findOpenByUserId($userId);
+        }
 
         if ($register === null) {
             return null;

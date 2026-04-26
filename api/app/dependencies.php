@@ -129,12 +129,16 @@ return function (ContainerBuilder $containerBuilder) {
         },
 
         CashRegisterService::class => function (ContainerInterface $c) {
-            return new CashRegisterService($c->get(CashRegisterRepositoryInterface::class));
+            return new CashRegisterService(
+                $c->get(CashRegisterRepositoryInterface::class),
+                $c->get(SettingsInterface::class)
+            );
         },
 
         CashRegisterMiddleware::class => function (ContainerInterface $c) {
             return new CashRegisterMiddleware(
                 $c->get(CashRegisterRepositoryInterface::class),
+                $c->get(SettingsInterface::class),
                 new ResponseFactory()
             );
         },
@@ -172,6 +176,7 @@ return function (ContainerBuilder $containerBuilder) {
                 $c->get(ProductRepositoryInterface::class),
                 $c->get(CashRegisterRepositoryInterface::class),
                 $c->get(CustomerRepositoryInterface::class),
+                $c->get(SettingsInterface::class),
                 $c->get(PDO::class)
             );
         },

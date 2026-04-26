@@ -17,9 +17,19 @@ interface CashRegisterRepositoryInterface
     public function findOpenByUserId(int $userId): ?array;
 
     /**
+     * Find any currently open cash register (global scope - no user filter).
+     */
+    public function findOpenGlobal(): ?array;
+
+    /**
      * Find any open cash register regardless of user (to enforce one-at-a-time per user).
      */
     public function findLastOpenRegister(int $userId): ?array;
+
+    /**
+     * Find any currently open cash register (global scope - no user filter).
+     */
+    public function findLastOpenGlobal(): ?array;
 
     /**
      * Find a cash register by its ID including movements summary.
