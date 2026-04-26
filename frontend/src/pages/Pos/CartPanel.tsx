@@ -22,18 +22,29 @@ export function CartPanel() {
   const paymentMethod = useCartStore((s) => s.paymentMethod)
   const amountPaid = useCartStore((s) => s.amountPaid)
   const notes = useCartStore((s) => s.notes)
+  const createDebt = useCartStore((s) => s.createDebt)
   const setPaymentMethod = useCartStore((s) => s.setPaymentMethod)
   const setAmountPaid = useCartStore((s) => s.setAmountPaid)
   const setNotes = useCartStore((s) => s.setNotes)
+  const setCreateDebt = useCartStore((s) => s.setCreateDebt)
   const clearCart = useCartStore((s) => s.clearCart)
   const getTotal = useCartStore((s) => s.getTotal)
   const getChange = useCartStore((s) => s.getChange)
+  const getPendingDebt = useCartStore((s) => s.getPendingDebt)
 
   const createSale = useCreateSale()
 
   const total = getTotal()
   const change = getChange()
-  const canPay = items.length > 0 && (paymentMethod === 'transfer' ? true : amountPaid >= total)
+  const pendingDebt = getPendingDebt()
+  const canPay = items.length > 0 && (
+    paymentMethod === 'transfer' ? 
+      true : 
+      createDebt ? 
+        amountPaid >= 0 : 
+        amountPaid >= total
+  )
+  const needsCustomerForDebt = createDebt && !customer
 
   useEffect(() => {
     if (paymentMethod === 'transfer') {
@@ -41,8 +52,18 @@ export function CartPanel() {
     }
   }, [paymentMethod, total, setAmountPaid])
 
+  useEffect(() => {
+    if (!createDebt) {
+      if (amountPaid < 0) setAmountPaid(0)
+    }
+  }, [createDebt, amountPaid, setAmountPaid])
+
   const handleCheckout = async () => {
     if (!canPay) return
+    if (createDebt && !customer) {
+      toast.error('Selecciona un cliente para crear deuda')
+      return
+    }
 
     try {
       const sale = await createSale.mutateAsync({
@@ -51,6 +72,7 @@ export function CartPanel() {
         amount_paid: amountPaid,
         customer_id: customer?.id ?? null,
         notes: notes || undefined,
+        create_debt: createDebt,
       })
 
       setLastSale(sale)
@@ -107,8 +129,27 @@ export function CartPanel() {
             <div className="px-4 py-3 space-y-3">
               {/* Customer */}
               <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Cliente (opcional)</Label>
+                <Label className="text-xs text-muted-foreground mb-1 block">
+                  Cliente {createDebt && <span className="text-destructive">*</span>}
+                </Label>
                 <CustomerSelector />
+                {needsCustomerForDebt && (
+                  <p className="text-xs text-destructive mt-1">Requerido para deuda</p>
+                )}
+              </div>
+
+              {/* Debt Toggle */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="create-debt"
+                  checked={createDebt}
+                  onChange={(e) => setCreateDebt(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="create-debt" className="text-sm font-normal cursor-pointer">
+                  Crear deuda (venta a crédito)
+                </Label>
               </div>
 
               {/* Payment Method */}
@@ -119,6 +160,7 @@ export function CartPanel() {
                     variant={paymentMethod === 'cash' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setPaymentMethod('cash')}
+                    disabled={createDebt}
                   >
                     Efectivo
                   </Button>
@@ -133,7 +175,7 @@ export function CartPanel() {
               </div>
 
               {/* Amount paid */}
-              {paymentMethod === 'cash' && (
+              {paymentMethod === 'cash' && !createDebt && (
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1 block">Monto recibido</Label>
                   <Input
@@ -149,12 +191,20 @@ export function CartPanel() {
               )}
 
               {/* Change */}
-              {paymentMethod === 'cash' && amountPaid > 0 && (
+              {!createDebt && paymentMethod === 'cash' && amountPaid > 0 && (
                 <div className={`flex justify-between text-sm font-medium rounded-lg px-3 py-2 ${
                   change >= 0 ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400'
                 }`}>
                   <span>Cambio</span>
                   <span>${change.toLocaleString()}</span>
+                </div>
+              )}
+
+              {/* Pending Debt Display */}
+              {createDebt && pendingDebt > 0 && (
+                <div className="flex justify-between text-sm font-medium rounded-lg px-3 py-2 bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
+                  <span>Pendiente</span>
+                  <span>${pendingDebt.toLocaleString()}</span>
                 </div>
               )}
 
@@ -182,10 +232,15 @@ export function CartPanel() {
             <Button
               className="w-full"
               size="lg"
-              disabled={!canPay || createSale.isPending}
+              disabled={(!canPay && !createDebt) || createSale.isPending || needsCustomerForDebt}
               onClick={handleCheckout}
             >
-              {createSale.isPending ? 'Procesando...' : 'Confirmar venta'}
+              {createSale.isPending 
+                ? 'Procesando...' 
+                : createDebt 
+                  ? 'Confirmar venta a crédito' 
+                  : 'Confirmar venta'
+              }
             </Button>
           </div>
         </div>

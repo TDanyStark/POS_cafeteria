@@ -7,6 +7,7 @@ interface CartState {
   paymentMethod: PaymentMethod
   amountPaid: number
   notes: string
+  createDebt: boolean
 
   // Actions
   addItem: (item: Omit<CartItem, 'quantity' | 'subtotal'>) => void
@@ -16,11 +17,13 @@ interface CartState {
   setPaymentMethod: (method: PaymentMethod) => void
   setAmountPaid: (amount: number) => void
   setNotes: (notes: string) => void
+  setCreateDebt: (create: boolean) => void
   clearCart: () => void
 
   // Computed helpers (used as methods)
   getTotal: () => number
   getChange: () => number
+  getPendingDebt: () => number
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
@@ -29,6 +32,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   paymentMethod: 'cash',
   amountPaid: 0,
   notes: '',
+  createDebt: false,
 
   addItem: (product) => {
     set((state) => {
@@ -92,6 +96,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   setPaymentMethod: (paymentMethod) => set({ paymentMethod }),
   setAmountPaid: (amountPaid) => set({ amountPaid }),
   setNotes: (notes) => set({ notes }),
+  setCreateDebt: (createDebt) => set({ createDebt }),
 
   clearCart: () =>
     set({
@@ -100,12 +105,18 @@ export const useCartStore = create<CartState>((set, get) => ({
       paymentMethod: 'cash',
       amountPaid: 0,
       notes: '',
+      createDebt: false,
     }),
 
   getTotal: () => get().items.reduce((sum, i) => sum + Number(i.subtotal), 0),
   getChange: () => {
     const state = get()
-    if (state.paymentMethod !== 'cash') return 0
+    if (state.paymentMethod !== 'cash' || state.createDebt) return 0
     return Math.max(0, state.amountPaid - state.getTotal())
+  },
+  getPendingDebt: () => {
+    const state = get()
+    if (!state.createDebt) return 0
+    return Math.max(0, state.getTotal() - state.amountPaid)
   },
 }))

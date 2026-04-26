@@ -8,6 +8,8 @@ use App\Application\Settings\SettingsInterface;
 use App\Domain\Repositories\CashRegisterRepositoryInterface;
 use App\Domain\Repositories\CategoryRepositoryInterface;
 use App\Domain\Repositories\CustomerRepositoryInterface;
+use App\Domain\Repositories\DebtPaymentRepositoryInterface;
+use App\Domain\Repositories\DebtRepositoryInterface;
 use App\Domain\Repositories\EmailSettingsRepositoryInterface;
 use App\Domain\Repositories\ProductRepositoryInterface;
 use App\Domain\Repositories\ReportRepositoryInterface;
@@ -17,6 +19,7 @@ use App\Domain\Services\AuthService;
 use App\Domain\Services\CashRegisterService;
 use App\Domain\Services\CategoryService;
 use App\Domain\Services\CustomerService;
+use App\Domain\Services\DebtService;
 use App\Domain\Services\EmailSettingsService;
 use App\Domain\Services\ProductService;
 use App\Domain\Services\ReportService;
@@ -26,6 +29,8 @@ use App\Infrastructure\Mail\EmailService;
 use App\Infrastructure\Persistence\MySqlCashRegisterRepository;
 use App\Infrastructure\Persistence\MySqlCategoryRepository;
 use App\Infrastructure\Persistence\MySqlCustomerRepository;
+use App\Infrastructure\Persistence\MySqlDebtPaymentRepository;
+use App\Infrastructure\Persistence\MySqlDebtRepository;
 use App\Infrastructure\Persistence\MySqlEmailSettingsRepository;
 use App\Infrastructure\Persistence\MySqlProductRepository;
 use App\Infrastructure\Persistence\MySqlReportRepository;
@@ -152,6 +157,24 @@ return function (ContainerBuilder $containerBuilder) {
             return new CustomerService($c->get(CustomerRepositoryInterface::class));
         },
 
+        // Debt
+        DebtRepositoryInterface::class => function (ContainerInterface $c) {
+            return new MySqlDebtRepository($c->get(PDO::class));
+        },
+
+        DebtPaymentRepositoryInterface::class => function (ContainerInterface $c) {
+            return new MySqlDebtPaymentRepository($c->get(PDO::class));
+        },
+
+        DebtService::class => function (ContainerInterface $c) {
+            return new DebtService(
+                $c->get(DebtRepositoryInterface::class),
+                $c->get(DebtPaymentRepositoryInterface::class),
+                $c->get(CashRegisterRepositoryInterface::class),
+                $c->get(SettingsInterface::class)
+            );
+        },
+
         // Email Settings
         EmailSettingsRepositoryInterface::class => function (ContainerInterface $c) {
             return new MySqlEmailSettingsRepository($c->get(PDO::class));
@@ -176,6 +199,7 @@ return function (ContainerBuilder $containerBuilder) {
                 $c->get(ProductRepositoryInterface::class),
                 $c->get(CashRegisterRepositoryInterface::class),
                 $c->get(CustomerRepositoryInterface::class),
+                $c->get(DebtRepositoryInterface::class),
                 $c->get(SettingsInterface::class),
                 $c->get(PDO::class)
             );

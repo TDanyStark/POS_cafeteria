@@ -18,6 +18,9 @@ use App\Application\Actions\Customers\CreateCustomerAction;
 use App\Application\Actions\Customers\GetCustomerAction;
 use App\Application\Actions\Customers\ListCustomersAction;
 use App\Application\Actions\Customers\UpdateCustomerAction;
+use App\Application\Actions\Debts\AddDebtPaymentAction;
+use App\Application\Actions\Debts\GetDebtAction;
+use App\Application\Actions\Debts\ListDebtsAction;
 use App\Application\Actions\Products\CreateProductAction;
 use App\Application\Actions\Products\DeleteProductAction;
 use App\Application\Actions\Products\ListProductsAction;
@@ -106,6 +109,13 @@ return function (App $app) {
                 $customers->post('', CreateCustomerAction::class);
                 $customers->get('/{id}', GetCustomerAction::class);
                 $customers->put('/{id}', UpdateCustomerAction::class);
+            });
+
+            // Debts (admin + cajero)
+            $auth->group('/debts', function (Group $debts) {
+                $debts->get('', ListDebtsAction::class);
+                $debts->get('/{id}', GetDebtAction::class);
+                $debts->post('/{id}/payments', AddDebtPaymentAction::class);
             });
 
             // Stock alerts (admin + cajero)

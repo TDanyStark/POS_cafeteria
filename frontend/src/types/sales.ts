@@ -58,6 +58,7 @@ export interface CreateSalePayload {
   amount_paid: number
   customer_id?: number | null
   notes?: string
+  create_debt?: boolean
 }
 
 export interface SaleFilters {
@@ -67,4 +68,43 @@ export interface SaleFilters {
   date_to?: string
   payment_method?: PaymentMethod | ''
   user_id?: number | ''
+}
+
+export interface CustomerDebt {
+  id: number
+  customer_id: number
+  customer_name: string
+  customer_phone: string | null
+  customer_email: string | null
+  sale_id: number
+  original_amount: number
+  paid_amount: number
+  remaining_amount: number
+  status: 'pending' | 'partial' | 'paid'
+  sale_total: number
+  payment_method: PaymentMethod
+  amount_paid: number
+  sale_created_at: string
+  created_at: string
+  updated_at: string
+}
+
+export interface DebtPayment {
+  id: number
+  debt_id: number
+  user_id: number
+  user_name: string
+  cash_register_id: number | null
+  amount: number
+  payment_method: PaymentMethod
+  notes: string | null
+  created_at: string
+}
+
+export interface DebtFilters {
+  page?: number
+  limit?: number
+  status?: 'pending' | 'partial' | 'paid' | ''
+  customer_id?: number | ''
+  customer_name?: string
 }
