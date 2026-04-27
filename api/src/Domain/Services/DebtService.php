@@ -20,6 +20,11 @@ class DebtService
 
     private function isGlobalScope(): bool
     {
+        return $this->settings->get('debtScope') === 'global';
+    }
+
+    private function isCashRegisterGlobalScope(): bool
+    {
         return $this->settings->get('cashRegisterScope') === 'global';
     }
 
@@ -58,7 +63,7 @@ class DebtService
 
         $cashRegisterId = null;
         if ($amount > 0) {
-            if ($this->isGlobalScope()) {
+            if ($this->isCashRegisterGlobalScope()) {
                 $cashRegister = $this->cashRegisterRepository->findOpenGlobal();
             } else {
                 $cashRegister = $this->cashRegisterRepository->findOpenByUserId($userId);

@@ -18,6 +18,7 @@ return function (ContainerBuilder $containerBuilder) {
                 'logErrorDetails'     => false,
                 'appTimezone'         => $_ENV['APP_TIMEZONE'] ?? 'America/Bogota',
                 'cashRegisterScope'    => $_ENV['CASH_REGISTER_SCOPE'] ?? 'personal',
+                'debtScope'            => $_ENV['DEBT_SCOPE'] ?? 'global',
                 'logger' => [
                     'name' => 'slim-app',
                     'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
