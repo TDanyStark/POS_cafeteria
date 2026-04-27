@@ -1,7 +1,8 @@
 param(
     [switch]$Quick,
     [switch]$Full,        # Incluye la carpeta vendor + ejecuta migrate/seed
-    [switch]$Reset        # Ejecuta 'composer reset' en el servidor
+    [switch]$Reset,       # Ejecuta 'composer reset' en el servidor
+    [switch]$Migrate      # Solo ejecuta migraciones en el servidor
 )
 
 $ErrorActionPreference = "Stop"
@@ -52,6 +53,12 @@ function Send-SecureFile {
     $PscpArgs += $Target
     
     pscp @PscpArgs
+}
+
+if ($Migrate) {
+    Write-Host "Ejecutando migraciones en el servidor..." -ForegroundColor Cyan
+    Invoke-Ssh "composer migrate" -WorkDir $RemoteApiPath
+    exit
 }
 
 Write-Host "Iniciando despliegue de POS Cafetería..." -ForegroundColor Cyan
