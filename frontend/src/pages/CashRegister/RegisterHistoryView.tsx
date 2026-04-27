@@ -48,7 +48,8 @@ export function RegisterHistoryView() {
             <TableRow>
               <TableHead>Apertura</TableHead>
               <TableHead>Cierre</TableHead>
-              <TableHead>Usuario</TableHead>
+              <TableHead>Abrió</TableHead>
+              <TableHead>Cerró</TableHead>
               <TableHead className="text-right">Inicial</TableHead>
               <TableHead className="text-right">Esperado</TableHead>
               <TableHead className="text-right">Declarado</TableHead>
@@ -60,7 +61,7 @@ export function RegisterHistoryView() {
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 8 }).map((_, j) => (
+                  {Array.from({ length: 9 }).map((_, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -85,6 +86,12 @@ export function RegisterHistoryView() {
                       <div className="flex items-center gap-2">
                         <User className="h-3 w-3 text-muted-foreground" />
                         <span>{reg.user_name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <User className="h-3 w-3 text-muted-foreground" />
+                        <span>{reg.closed_by_user_name ?? '—'}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -122,7 +129,7 @@ export function RegisterHistoryView() {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
+                <TableCell colSpan={9} className="h-24 text-center">
                   No se encontraron registros en este rango de fechas.
                 </TableCell>
               </TableRow>

@@ -17,6 +17,8 @@ export interface CashRegister {
   user_email?: string
   opened_at: string
   closed_at: string | null
+  closed_by_user_id?: number | null
+  closed_by_user_name?: string | null
   initial_amount: number
   final_amount: number | null
   declared_amount: number | null

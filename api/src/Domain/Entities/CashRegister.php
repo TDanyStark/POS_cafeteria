@@ -11,6 +11,7 @@ class CashRegister
         public readonly int $userId,
         public readonly string $openedAt,
         public readonly ?string $closedAt,
+        public readonly ?int $closedByUserId,
         public readonly float $initialAmount,
         public readonly ?float $finalAmount,
         public readonly ?float $declaredAmount,

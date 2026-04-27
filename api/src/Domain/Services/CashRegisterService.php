@@ -88,7 +88,7 @@ class CashRegisterService
         $finalAmount   = (float) $register['initial_amount'] + $cashIn - $cashOut + $cashSales;
         $difference    = $declaredAmount - $finalAmount;
 
-        $this->cashRegisterRepository->close($registerId, $declaredAmount, $finalAmount, $difference);
+        $this->cashRegisterRepository->close($registerId, $userId, $declaredAmount, $finalAmount, $difference);
 
         return $this->cashRegisterRepository->findByIdWithMovements($registerId);
     }

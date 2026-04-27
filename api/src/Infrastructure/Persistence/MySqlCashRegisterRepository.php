@@ -16,9 +16,12 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
     public function list(array $filters): array
     {
         $query = "
-            SELECT cr.*, u.name AS user_name
+            SELECT cr.*,
+                u.name AS user_name,
+                cu.name AS closed_by_user_name
             FROM cash_registers cr
             INNER JOIN users u ON u.id = cr.user_id
+            LEFT JOIN users cu ON cu.id = cr.closed_by_user_id
             WHERE 1=1
         ";
         $params = [];
@@ -84,9 +87,13 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
     public function findById(int $id): ?array
     {
         $stmt = $this->pdo->prepare("
-            SELECT cr.*, u.name AS user_name, u.email AS user_email
+            SELECT cr.*,
+                u.name AS user_name,
+                u.email AS user_email,
+                cu.name AS closed_by_user_name
             FROM cash_registers cr
             INNER JOIN users u ON u.id = cr.user_id
+            LEFT JOIN users cu ON cu.id = cr.closed_by_user_id
             WHERE cr.id = :id
         ");
         $stmt->execute(['id' => $id]);
@@ -130,23 +137,25 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
         return (int) $this->pdo->lastInsertId();
     }
 
-    public function close(int $id, float $declaredAmount, float $finalAmount, float $difference): bool
+    public function close(int $id, int $closedByUserId, float $declaredAmount, float $finalAmount, float $difference): bool
     {
         $stmt = $this->pdo->prepare("
             UPDATE cash_registers
-            SET status          = 'closed',
-                closed_at       = NOW(),
-                declared_amount = :declared_amount,
-                final_amount    = :final_amount,
-                difference      = :difference,
-                updated_at      = NOW()
+            SET status              = 'closed',
+                closed_at          = NOW(),
+                closed_by_user_id  = :closed_by_user_id,
+                declared_amount    = :declared_amount,
+                final_amount      = :final_amount,
+                difference        = :difference,
+                updated_at        = NOW()
             WHERE id = :id
         ");
         return $stmt->execute([
-            'id'              => $id,
-            'declared_amount' => $declaredAmount,
-            'final_amount'    => $finalAmount,
-            'difference'      => $difference,
+            'id'               => $id,
+            'closed_by_user_id'=> $closedByUserId,
+            'declared_amount'  => $declaredAmount,
+            'final_amount'     => $finalAmount,
+            'difference'       => $difference,
         ]);
     }
 

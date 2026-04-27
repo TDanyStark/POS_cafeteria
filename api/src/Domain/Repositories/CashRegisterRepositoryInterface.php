@@ -49,7 +49,7 @@ interface CashRegisterRepositoryInterface
     /**
      * Close a cash register.
      */
-    public function close(int $id, float $declaredAmount, float $finalAmount, float $difference): bool;
+    public function close(int $id, int $closedByUserId, float $declaredAmount, float $finalAmount, float $difference): bool;
 
     /**
      * Add a movement to a cash register.
