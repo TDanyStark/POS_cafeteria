@@ -16,13 +16,12 @@ class MySqlDebtRepository implements DebtRepositoryInterface
     private function mapDebt(array &$debt): void
     {
         $originalAmount = (int) $debt['original_amount'];
-        $initialPayment = (int) $debt['amount_paid'];
-        $debtPaidAmount = (int) $debt['paid_amount'];
-        $totalPaid = $initialPayment + $debtPaidAmount;
-        $debt['paid_amount'] = $totalPaid;
-        $debt['remaining_amount'] = max(0, $originalAmount - $totalPaid);
-        $debt['initial_payment_amount'] = $initialPayment;
-        $debt['debt_paid_amount'] = $debtPaidAmount;
+        // paid_amount in DB is the canonical total paid (set on create from amount_paid, updated on each payment)
+        $paidAmount = (int) $debt['paid_amount'];
+        $debt['paid_amount'] = $paidAmount;
+        $debt['remaining_amount'] = max(0, $originalAmount - $paidAmount);
+        // expose initial payment as informational only — never add to paid_amount again
+        $debt['initial_payment_amount'] = (int) $debt['amount_paid'];
     }
 
     public function findById(int $id): ?array

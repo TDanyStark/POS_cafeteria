@@ -101,11 +101,9 @@ class DebtService
             );
         }
 
-        // debt_paid_amount is only the later payments stored in DB (not initial)
-        // paid_amount from mapDebt = initial + debt_paid_amount (for display)
-        // We store in DB only the accumulated later payments
-        $newPaidAmount = (int) $debt['debt_paid_amount'] + $amount;
-        $newDbRemainingAmount = (int) $debt['original_amount'] - $newPaidAmount - (int) $debt['initial_payment_amount'];
+        // paid_amount from DB is canonical total paid; just add the new payment
+        $newPaidAmount = (int) $debt['paid_amount'] + $amount;
+        $newDbRemainingAmount = max(0, (int) $debt['original_amount'] - $newPaidAmount);
 
         if ($newDbRemainingAmount < 0) {
             $newDbRemainingAmount = 0;
