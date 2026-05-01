@@ -39,11 +39,11 @@ export function CartPanel() {
   const change = getChange()
   const pendingDebt = getPendingDebt()
   const canPay = items.length > 0 && (
-    paymentMethod === 'transfer' ? 
-      true : 
-      amountPaid >= 0 && amountPaid <= total && (
-        createDebt ? true : amountPaid >= total
-      )
+    paymentMethod === 'transfer'
+      ? true
+      : createDebt
+        ? amountPaid >= 0 && amountPaid <= total
+        : amountPaid >= total
   )
   const needsCustomerForDebt = createDebt && !customer
 
@@ -53,11 +53,6 @@ export function CartPanel() {
     }
   }, [paymentMethod, total, setAmountPaid])
 
-  useEffect(() => {
-    if (paymentMethod === 'cash' && amountPaid > total) {
-      setAmountPaid(total)
-    }
-  }, [paymentMethod, total, amountPaid, setAmountPaid])
 
   const handleCheckout = async () => {
     if (!canPay) return
@@ -183,10 +178,9 @@ export function CartPanel() {
                   <Input
                     type="number"
                     min={0}
-                    max={total}
                     step="1000"
                     value={amountPaid || ''}
-                    onChange={(e) => setAmountPaid(Math.min(total, Math.max(0, parseFloat(e.target.value) || 0)))}
+                    onChange={(e) => setAmountPaid(Math.max(0, parseFloat(e.target.value) || 0))}
                     placeholder={createDebt ? `$0 - ${formatCurrency(total)}` : `Mínimo ${formatCurrency(total)}`}
                     className="h-9"
                   />
