@@ -8,38 +8,40 @@ final class UserSeeder extends AbstractSeed
 {
     public function run(): void
     {
-        // Truncate to allow idempotent re-seeding
         $this->getAdapter()->execute('SET FOREIGN_KEY_CHECKS=0');
         $this->getAdapter()->execute('TRUNCATE TABLE users');
         $this->getAdapter()->execute('SET FOREIGN_KEY_CHECKS=1');
 
+        $now = date('Y-m-d H:i:s');
+
         $users = [
             [
-                'name' => 'Administrador',
-                'email' => 'admin@cafeteria.com',
-                'password' => password_hash('admin123', PASSWORD_DEFAULT),
-                'role' => 'admin',
-                'active' => true,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
+                'name'       => 'Administrador',
+                'email'      => 'admin@cafeteria.com',
+                // password: admin123
+                'password'   => '$2y$10$mGDtfpHF34Zo8iiN6FNFv.kBUK.LuBQE3TK1bXCokGV.lFn8WZh.i',
+                'role'       => 'admin',
+                'active'     => true,
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
-                'name' => 'Cajero Juan',
-                'email' => 'juan@cafeteria.com',
-                'password' => password_hash('juan123', PASSWORD_DEFAULT),
-                'role' => 'cashier',
-                'active' => true,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
+                'name'       => 'lina cespedes',
+                'email'      => 'lina@gmail.com',
+                'password'   => '$2y$10$ozu9ccTLXPUnzVVZ80oEmOoDaVpUfeetX.vY6CEBhbg63d7KtgfVq',
+                'role'       => 'cashier',
+                'active'     => true,
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
-                'name' => 'Cajero María',
-                'email' => 'maria@cafeteria.com',
-                'password' => password_hash('maria123', PASSWORD_DEFAULT),
-                'role' => 'cashier',
-                'active' => true,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
+                'name'       => 'Carolina grisales',
+                'email'      => 'carolina@gmail.com',
+                'password'   => '$2y$10$rF7dkwNgPFguGgzLrp2GHebERtOoyBKLJDdQxRDSpDPpI83oAjA7G',
+                'role'       => 'cashier',
+                'active'     => true,
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
         ];
 
