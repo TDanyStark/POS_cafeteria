@@ -99,6 +99,8 @@ export interface CustomerDebt {
   payment_method: PaymentMethod
   amount_paid: number
   sale_created_at: string
+  sale_user_id: number | null
+  sale_user_name: string | null
   created_at: string
   updated_at: string
 }

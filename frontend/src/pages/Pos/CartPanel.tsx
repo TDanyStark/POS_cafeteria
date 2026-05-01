@@ -174,7 +174,7 @@ export function CartPanel() {
               {paymentMethod === 'cash' && (
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1 block">
-                    Monto recibido {createDebt && <span className="text-xs">(parcial o total)</span>}
+                    Monto recibido {createDebt && <span className="text-xs">(abono parcial)</span>}
                   </Label>
                   <Input
                     type="number"
@@ -182,9 +182,14 @@ export function CartPanel() {
                     step="1000"
                     value={amountPaid || ''}
                     onChange={(e) => setAmountPaid(Math.max(0, parseFloat(e.target.value) || 0))}
-                    placeholder={createDebt ? `$0 - ${formatCurrency(total)}` : `Mínimo ${formatCurrency(total)}`}
-                    className="h-9"
+                    placeholder={createDebt ? `$0 - ${formatCurrency(total - 1)}` : `Mínimo ${formatCurrency(total)}`}
+                    className={`h-9 ${createDebt && amountPaid >= total ? 'border-destructive focus-visible:ring-destructive' : ''}`}
                   />
+                  {createDebt && amountPaid >= total && (
+                    <p className="text-xs text-destructive mt-1">
+                      El abono debe ser menor al total. Si el cliente paga completo, desmarca "Crear deuda".
+                    </p>
+                  )}
                 </div>
               )}
 

@@ -34,10 +34,13 @@ class MySqlDebtRepository implements DebtRepositoryInterface
                    s.total AS sale_total,
                    s.payment_method,
                    s.amount_paid,
-                   s.created_at AS sale_created_at
+                   s.created_at AS sale_created_at,
+                   s.user_id AS sale_user_id,
+                   u.name AS sale_user_name
             FROM customer_debts cd
             INNER JOIN customers c ON c.id = cd.customer_id
             INNER JOIN sales s ON s.id = cd.sale_id
+            LEFT JOIN users u ON u.id = s.user_id
             WHERE cd.id = :id
         ');
         $stmt->execute(['id' => $id]);
@@ -79,10 +82,13 @@ class MySqlDebtRepository implements DebtRepositoryInterface
                    s.total AS sale_total,
                    s.payment_method,
                    s.amount_paid,
-                   s.created_at AS sale_created_at
+                   s.created_at AS sale_created_at,
+                   s.user_id AS sale_user_id,
+                   u.name AS sale_user_name
             FROM customer_debts cd
             INNER JOIN customers c ON c.id = cd.customer_id
             INNER JOIN sales s ON s.id = cd.sale_id
+            LEFT JOIN users u ON u.id = s.user_id
             WHERE cd.sale_id = :sale_id
         ');
         $stmt->execute(['sale_id' => $saleId]);
@@ -124,10 +130,13 @@ class MySqlDebtRepository implements DebtRepositoryInterface
                    s.total AS sale_total,
                    s.payment_method,
                    s.amount_paid,
-                   s.created_at AS sale_created_at
+                   s.created_at AS sale_created_at,
+                   s.user_id AS sale_user_id,
+                   u.name AS sale_user_name
             FROM customer_debts cd
             INNER JOIN customers c ON c.id = cd.customer_id
             INNER JOIN sales s ON s.id = cd.sale_id
+            LEFT JOIN users u ON u.id = s.user_id
             {$whereClause}
             ORDER BY cd.created_at DESC
             LIMIT :limit OFFSET :offset
