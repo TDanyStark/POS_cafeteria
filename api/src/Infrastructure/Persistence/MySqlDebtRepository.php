@@ -13,6 +13,18 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         private PDO $pdo
     ) {}
 
+    private function mapDebt(array &$debt): void
+    {
+        $originalAmount = (int) $debt['original_amount'];
+        $initialPayment = (int) $debt['amount_paid'];
+        $debtPaidAmount = (int) $debt['paid_amount'];
+        $totalPaid = $initialPayment + $debtPaidAmount;
+        $debt['paid_amount'] = $totalPaid;
+        $debt['remaining_amount'] = max(0, $originalAmount - $totalPaid);
+        $debt['initial_payment_amount'] = $initialPayment;
+        $debt['debt_paid_amount'] = $debtPaidAmount;
+    }
+
     public function findById(int $id): ?array
     {
         $stmt = $this->pdo->prepare('
