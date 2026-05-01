@@ -49,7 +49,7 @@ export function PosPage() {
   }
 
   return (
-    <div className="-m-3 sm:-m-6 h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
+    <div className="-m-3 sm:-m-6 h-screen flex flex-col overflow-hidden">
       {/* Mobile tab switcher — only visible on small screens */}
       <div className="flex md:hidden border-b border-border bg-card flex-none">
         <button

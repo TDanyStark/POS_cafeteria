@@ -27,12 +27,12 @@ class AuthService
             return null;
         }
 
-        if (!$user->isActive()) {
+        if (!password_verify($password, $user->getPassword())) {
             return null;
         }
 
-        if (!password_verify($password, $user->getPassword())) {
-            return null;
+        if (!$user->isActive()) {
+            throw new \RuntimeException('Tu cuenta está inactiva. Contacta al administrador para solicitar la activación.', 403);
         }
 
         return $user;

@@ -25,6 +25,9 @@ class DeleteUserAction
         } catch (\InvalidArgumentException $e) {
             $payload = ['success' => false, 'message' => $e->getMessage(), 'errors' => []];
             $status = 404;
+        } catch (\RuntimeException $e) {
+            $payload = ['success' => false, 'message' => $e->getMessage(), 'errors' => []];
+            $status = $e->getCode() === 409 ? 409 : 500;
         }
 
         $response->getBody()->write(json_encode($payload));

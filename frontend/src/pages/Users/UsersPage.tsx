@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
+import { toast } from 'sonner'
 import {
   Select,
   SelectContent,
@@ -20,17 +22,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useUsers } from '@/hooks/useUsers'
+import { useUpdateUser, useUsers } from '@/hooks/useUsers'
 import { UserFormModal } from './UserFormModal'
 import { DeleteUserDialog } from './DeleteUserDialog'
 import type { UserListItem } from '@/types/users'
 import { formatDateOnly } from '@/utils/format'
+import { getApiErrorMessage } from '@/utils/apiError'
 
 export function UsersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [formOpen, setFormOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<UserListItem | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<UserListItem | null>(null)
+  const [statusTargetId, setStatusTargetId] = useState<number | null>(null)
+  const updateUser = useUpdateUser()
 
   const page = parseInt(searchParams.get('page') ?? '1')
   const search = searchParams.get('search') ?? ''
@@ -58,6 +63,24 @@ export function UsersPage() {
   const handleCloseForm = () => {
     setFormOpen(false)
     setEditTarget(null)
+  }
+
+  const handleToggleStatus = async (user: UserListItem, active: boolean) => {
+    setStatusTargetId(user.id)
+
+    try {
+      await updateUser.mutateAsync({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        active,
+      })
+      toast.success(active ? 'Cajero activado correctamente' : 'Cajero desactivado correctamente')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Error al actualizar el estado del cajero'))
+    } finally {
+      setStatusTargetId(null)
+    }
   }
 
   const pagination = data?.pagination
@@ -135,9 +158,18 @@ export function UsersPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={user.active ? 'default' : 'secondary'}>
-                      {user.active ? 'Activo' : 'Inactivo'}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        size="sm"
+                        checked={user.active}
+                        disabled={statusTargetId === user.id}
+                        aria-label={user.active ? 'Desactivar cajero' : 'Activar cajero'}
+                        onCheckedChange={(checked) => handleToggleStatus(user, checked)}
+                      />
+                      <Badge variant={user.active ? 'default' : 'secondary'}>
+                        {user.active ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </div>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {formatDateOnly(user.created_at)}

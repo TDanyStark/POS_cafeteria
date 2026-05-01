@@ -34,7 +34,20 @@ class LoginAction
                 ->withStatus(422);
         }
 
-        $user = $this->authService->validateCredentials($data['email'], $data['password']);
+        try {
+            $user = $this->authService->validateCredentials($data['email'], $data['password']);
+        } catch (\RuntimeException $e) {
+            $payload = [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => [],
+            ];
+
+            $response->getBody()->write(json_encode($payload));
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus($e->getCode() === 403 ? 403 : 500);
+        }
 
         if ($user === null) {
             $payload = [

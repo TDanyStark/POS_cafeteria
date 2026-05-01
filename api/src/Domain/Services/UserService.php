@@ -6,6 +6,7 @@ namespace App\Domain\Services;
 
 use App\Domain\Entities\User;
 use App\Domain\Repositories\UserRepositoryInterface;
+use PDOException;
 
 class UserService
 {
@@ -109,7 +110,15 @@ class UserService
             throw new \InvalidArgumentException('Cajero no encontrado.');
         }
 
-        $this->userRepository->delete($id);
+        try {
+            $this->userRepository->delete($id);
+        } catch (PDOException $e) {
+            if ($e->getCode() === '23000') {
+                throw new \RuntimeException('El usuario tiene registros asociados y no se puede eliminar. Si ya no debe acceder al sistema, desactívalo en su lugar.', 409);
+            }
+
+            throw $e;
+        }
     }
 
     private function validateName(string $name): void
