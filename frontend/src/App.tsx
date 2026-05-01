@@ -9,6 +9,7 @@ const LoginPage = lazy(() => import('@/pages/Login/LoginPage').then(m => ({ defa
 const DashboardPage = lazy(() => import('@/pages/Dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })))
 const PosPage = lazy(() => import('@/pages/Pos/PosPage').then(m => ({ default: m.PosPage })))
 const CashRegisterPage = lazy(() => import('@/pages/CashRegister/CashRegisterPage').then(m => ({ default: m.CashRegisterPage })))
+const CashRegisterDetailPage = lazy(() => import('@/pages/CashRegister/CashRegisterDetailPage').then(m => ({ default: m.CashRegisterDetailPage })))
 const SalesPage = lazy(() => import('@/pages/Sales/SalesPage').then(m => ({ default: m.SalesPage })))
 const ProductsPage = lazy(() => import('@/pages/Products/ProductsPage').then(m => ({ default: m.ProductsPage })))
 const CategoriesPage = lazy(() => import('@/pages/Categories/CategoriesPage').then(m => ({ default: m.CategoriesPage })))
@@ -42,6 +43,7 @@ function App() {
             <Route element={<RoleRoute allowedRoles={['admin', 'cashier']} />}>
               <Route path="/pos" element={<PosPage />} />
               <Route path="/cash-register" element={<CashRegisterPage />} />
+              <Route path="/cash-register/:id" element={<CashRegisterDetailPage />} />
               <Route path="/sales" element={<SalesPage />} />
               <Route path="/debtors" element={<DebtorsPage />} />
             </Route>

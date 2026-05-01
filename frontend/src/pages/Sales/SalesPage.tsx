@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -24,6 +24,7 @@ import { formatDate } from '@/utils/format'
 export function SalesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null)
+  const navigate = useNavigate()
 
   const page          = parseInt(searchParams.get('page') ?? '1')
   const dateFrom      = searchParams.get('date_from') ?? ''
@@ -95,6 +96,11 @@ export function SalesPage() {
 
   const hasFilters = dateFrom || dateTo || paymentMethod
 
+  const handleCashRegisterClick = (e: React.MouseEvent, registerId: number) => {
+    e.stopPropagation()
+    navigate(`/cash-register/${registerId}`)
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-1">
@@ -144,6 +150,7 @@ export function SalesPage() {
               <TableHead>Fecha</TableHead>
               <TableHead>Cajero</TableHead>
               <TableHead>Cliente</TableHead>
+              <TableHead>Caja</TableHead>
               <TableHead>Método</TableHead>
               <TableHead className="text-right">Total</TableHead>
               <TableHead className="w-16"></TableHead>
@@ -153,7 +160,7 @@ export function SalesPage() {
             {isLoading ? (
               Array.from({ length: 10 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 7 }).map((_, j) => (
+                  {Array.from({ length: 8 }).map((_, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -162,7 +169,7 @@ export function SalesPage() {
               ))
             ) : data?.data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                   No se encontraron ventas
                 </TableCell>
               </TableRow>
@@ -175,6 +182,14 @@ export function SalesPage() {
                   </TableCell>
                   <TableCell className="text-sm">{sale.cashier_name}</TableCell>
                   <TableCell className="text-sm">{sale.customer_name ?? <span className="text-muted-foreground italic">Anónimo</span>}</TableCell>
+                  <TableCell>
+                    <button
+                      onClick={(e) => handleCashRegisterClick(e, sale.cash_register_id)}
+                      className="font-mono text-xs text-primary underline-offset-2 hover:underline"
+                    >
+                      #{sale.cash_register_id}
+                    </button>
+                  </TableCell>
                   <TableCell>
                     <Badge variant={sale.payment_method === 'cash' ? 'secondary' : 'outline'} className="text-xs">
                       {sale.payment_method === 'cash' ? 'Efectivo' : 'Transferencia'}

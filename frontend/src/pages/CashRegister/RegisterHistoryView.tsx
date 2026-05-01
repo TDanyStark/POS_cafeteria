@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import { CheckCircle2, AlertCircle, User } from 'lucide-react'
 import type { DateRange } from 'react-day-picker'
+import { useNavigate } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
 import {
@@ -19,6 +20,7 @@ import { formatCurrency, formatDate } from '@/utils/format'
 import { DateRangePicker } from '@/components/shared/DateRangePicker'
 
 export function RegisterHistoryView() {
+  const navigate = useNavigate()
   const [date, setDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 7),
     to: new Date(),
@@ -75,7 +77,11 @@ export function RegisterHistoryView() {
                 const isNegative = !isBalanced && diff < 0
 
                 return (
-                  <TableRow key={reg.id}>
+                  <TableRow
+                    key={reg.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => navigate(`/cash-register/${reg.id}`)}
+                  >
                     <TableCell className="whitespace-nowrap">
                       {formatDate(reg.opened_at)}
                     </TableCell>

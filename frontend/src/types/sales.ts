@@ -68,6 +68,7 @@ export interface SaleFilters {
   date_to?: string
   payment_method?: PaymentMethod | ''
   user_id?: number | ''
+  cash_register_id?: number | ''
 }
 
 export interface CustomerDebt {

@@ -11,6 +11,7 @@ export function useSales(filters: SaleFilters = {}) {
   if (filters.date_to) params.set('date_to', filters.date_to)
   if (filters.payment_method) params.set('payment_method', filters.payment_method)
   if (filters.user_id) params.set('user_id', String(filters.user_id))
+  if (filters.cash_register_id) params.set('cash_register_id', String(filters.cash_register_id))
 
   return useQuery<PaginatedResponse<Sale>>({
     queryKey: ['sales', filters],

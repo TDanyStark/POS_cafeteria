@@ -109,16 +109,16 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
             return null;
         }
 
-        $register['movements']      = $this->getMovements($id);
-        $register['manual_cash_in'] = $this->sumCashIn($id);
-        $register['manual_cash_out']= $this->sumCashOut($id);
-        $register['cash_sales']     = $this->sumCashSales($id);
-        $register['transfer_sales'] = $this->sumTransferSales($id);
+        $register['movements']       = $this->getMovements($id);
+        $register['manual_cash_in']  = $this->sumCashIn($id);
+        $register['manual_cash_out'] = $this->sumCashOut($id);
+        $register['cash_sales']      = $this->sumCashSales($id);
+        $register['transfer_sales']  = $this->sumTransferSales($id);
 
         $initialAmount = (float) $register['initial_amount'];
-        $register['expected_amount'] = $initialAmount 
-            + (float) $register['manual_cash_in'] 
-            - (float) $register['manual_cash_out'] 
+        $register['expected_amount'] = $initialAmount
+            + (float) $register['manual_cash_in']
+            - (float) $register['manual_cash_out']
             + (float) $register['cash_sales'];
 
         return $register;
@@ -211,7 +211,7 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
     public function sumCashSales(int $cashRegisterId): float
     {
         $stmt = $this->pdo->prepare("
-            SELECT COALESCE(SUM(total), 0) FROM sales
+            SELECT COALESCE(SUM(LEAST(CAST(total AS DECIMAL(10,2)), CAST(amount_paid AS DECIMAL(10,2)))), 0) FROM sales
             WHERE cash_register_id = :id AND payment_method = 'cash'
         ");
         $stmt->execute(['id' => $cashRegisterId]);
@@ -227,4 +227,5 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
         $stmt->execute(['id' => $cashRegisterId]);
         return (float) $stmt->fetchColumn();
     }
+
 }

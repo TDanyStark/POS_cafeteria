@@ -43,6 +43,10 @@ class ListSalesAction
             $filters['user_id'] = (int) $params['user_id'];
         }
 
+        if (!empty($params['cash_register_id'])) {
+            $filters['cash_register_id'] = (int) $params['cash_register_id'];
+        }
+
         $result  = $this->saleService->list($page, $limit, $filters);
         $payload = ['success' => true, 'data' => $result['data'], 'pagination' => $result['pagination']];
 

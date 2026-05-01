@@ -54,6 +54,7 @@ export function DebtorsPage() {
 
   const [searchName, setSearchName] = useState(customerName)
   const [selectedDebt, setSelectedDebt] = useState<number | null>(null)
+  const [selectedDebtRemaining, setSelectedDebtRemaining] = useState<number>(0)
   const [paymentAmount, setPaymentAmount] = useState<number>(0)
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer'>('cash')
   const [paymentNotes, setPaymentNotes] = useState('')
@@ -101,6 +102,7 @@ export function DebtorsPage() {
       })
       toast.success('Abono registrado correctamente')
       setSelectedDebt(null)
+      setSelectedDebtRemaining(0)
       setPaymentAmount(0)
       setPaymentMethod('cash')
       setPaymentNotes('')
@@ -112,6 +114,7 @@ export function DebtorsPage() {
 
   const openPaymentModal = (debtId: number, remaining: number) => {
     setSelectedDebt(debtId)
+    setSelectedDebtRemaining(remaining)
     setPaymentAmount(remaining)
   }
 
@@ -263,7 +266,15 @@ export function DebtorsPage() {
         </div>
       )}
 
-      <Dialog open={selectedDebt !== null} onOpenChange={(open) => !open && setSelectedDebt(null)}>
+      <Dialog open={selectedDebt !== null} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedDebt(null)
+          setSelectedDebtRemaining(0)
+          setPaymentAmount(0)
+          setPaymentMethod('cash')
+          setPaymentNotes('')
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Registrar Abono</DialogTitle>
@@ -275,10 +286,14 @@ export function DebtorsPage() {
               <Input
                 type="number"
                 min={0}
+                max={selectedDebtRemaining}
                 step="1000"
                 value={paymentAmount || ''}
-                onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
+                onChange={(e) => setPaymentAmount(Math.min(selectedDebtRemaining, Math.max(0, parseFloat(e.target.value) || 0)))}
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Pendiente: ${selectedDebtRemaining.toLocaleString()}
+              </p>
             </div>
 
             <div>
@@ -319,7 +334,7 @@ export function DebtorsPage() {
             </Button>
             <Button
               onClick={handleAddPayment}
-              disabled={addPayment.isPending || paymentAmount <= 0}
+              disabled={addPayment.isPending || paymentAmount <= 0 || paymentAmount > selectedDebtRemaining}
             >
               {addPayment.isPending ? 'Guardando...' : 'Confirmar abono'}
             </Button>

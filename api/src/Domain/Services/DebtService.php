@@ -50,6 +50,10 @@ class DebtService
             throw new \InvalidArgumentException('Esta deuda ya está pagada completely.');
         }
 
+        if ($amount <= 0) {
+            throw new \InvalidArgumentException('El monto del abono debe ser mayor a 0.');
+        }
+
         $newPaidAmount = (float) $debt['paid_amount'] + $amount;
         $newRemainingAmount = (float) $debt['remaining_amount'] - $amount;
 
@@ -61,18 +65,18 @@ class DebtService
 
         $newStatus = bccomp((string) $newRemainingAmount, '0', 2) <= 0 ? 'paid' : 'partial';
 
-        $cashRegisterId = null;
-        if ($amount > 0) {
-            if ($this->isCashRegisterGlobalScope()) {
-                $cashRegister = $this->cashRegisterRepository->findOpenGlobal();
-            } else {
-                $cashRegister = $this->cashRegisterRepository->findOpenByUserId($userId);
-            }
-
-            if ($cashRegister !== null) {
-                $cashRegisterId = (int) $cashRegister['id'];
-            }
+        // Require open cash register for all debt payments
+        if ($this->isCashRegisterGlobalScope()) {
+            $cashRegister = $this->cashRegisterRepository->findOpenGlobal();
+        } else {
+            $cashRegister = $this->cashRegisterRepository->findOpenByUserId($userId);
         }
+
+        if ($cashRegister === null) {
+            throw new \RuntimeException('No hay una caja abierta. Debes abrir caja antes de registrar abonos.', 403);
+        }
+
+        $cashRegisterId = (int) $cashRegister['id'];
 
         $this->debtPaymentRepository->create(
             $debtId,
@@ -82,6 +86,22 @@ class DebtService
             $paymentMethod,
             $notes
         );
+
+        // Create cash movement for cash payments
+        if ($paymentMethod === 'cash') {
+            $customerName = $debt['customer_name'] ?? 'Cliente';
+            $description = sprintf('Abono deuda - %s', $customerName);
+            if ($notes) {
+                $description .= ' - ' . $notes;
+            }
+            $this->cashRegisterRepository->addMovement(
+                $cashRegisterId,
+                $userId,
+                'in',
+                $amount,
+                $description
+            );
+        }
 
         $this->debtRepository->update(
             $debtId,

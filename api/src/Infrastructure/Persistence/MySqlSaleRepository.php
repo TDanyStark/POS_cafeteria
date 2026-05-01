@@ -66,6 +66,11 @@ class MySqlSaleRepository implements SaleRepositoryInterface
             $params['user_id'] = (int) $filters['user_id'];
         }
 
+        if (!empty($filters['cash_register_id'])) {
+            $where[]                    = 's.cash_register_id = :cash_register_id';
+            $params['cash_register_id'] = (int) $filters['cash_register_id'];
+        }
+
         $whereClause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
 
         $sql = "
@@ -120,6 +125,11 @@ class MySqlSaleRepository implements SaleRepositoryInterface
         if (!empty($filters['user_id'])) {
             $where[]           = 's.user_id = :user_id';
             $params['user_id'] = (int) $filters['user_id'];
+        }
+
+        if (!empty($filters['cash_register_id'])) {
+            $where[]                    = 's.cash_register_id = :cash_register_id';
+            $params['cash_register_id'] = (int) $filters['cash_register_id'];
         }
 
         $whereClause = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';

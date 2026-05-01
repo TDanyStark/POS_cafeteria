@@ -130,7 +130,7 @@ class SaleService
             throw new \InvalidArgumentException('El monto pagado no puede ser negativo.');
         }
 
-        $changeAmount = $paymentMethod === 'cash' && !$createDebt ? $amountPaid - $total : 0.0;
+        $changeAmount = $paymentMethod === 'cash' ? max(0.0, $amountPaid - $total) : 0.0;
         $notes        = isset($data['notes']) ? trim((string) $data['notes']) : null;
 
         // Execute in a transaction

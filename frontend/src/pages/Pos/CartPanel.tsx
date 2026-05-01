@@ -40,9 +40,9 @@ export function CartPanel() {
   const canPay = items.length > 0 && (
     paymentMethod === 'transfer' ? 
       true : 
-      createDebt ? 
-        amountPaid >= 0 : 
-        amountPaid >= total
+      amountPaid >= 0 && amountPaid <= total && (
+        createDebt ? true : amountPaid >= total
+      )
   )
   const needsCustomerForDebt = createDebt && !customer
 
@@ -53,10 +53,10 @@ export function CartPanel() {
   }, [paymentMethod, total, setAmountPaid])
 
   useEffect(() => {
-    if (!createDebt) {
-      if (amountPaid < 0) setAmountPaid(0)
+    if (paymentMethod === 'cash' && amountPaid > total) {
+      setAmountPaid(total)
     }
-  }, [createDebt, amountPaid, setAmountPaid])
+  }, [paymentMethod, total, amountPaid, setAmountPaid])
 
   const handleCheckout = async () => {
     if (!canPay) return
@@ -160,7 +160,6 @@ export function CartPanel() {
                     variant={paymentMethod === 'cash' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setPaymentMethod('cash')}
-                    disabled={createDebt}
                   >
                     Efectivo
                   </Button>
@@ -175,23 +174,26 @@ export function CartPanel() {
               </div>
 
               {/* Amount paid */}
-              {paymentMethod === 'cash' && !createDebt && (
+              {paymentMethod === 'cash' && (
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">Monto recibido</Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">
+                    Monto recibido {createDebt && <span className="text-xs">(parcial o total)</span>}
+                  </Label>
                   <Input
                     type="number"
-                    min={total}
+                    min={0}
+                    max={total}
                     step="1000"
                     value={amountPaid || ''}
-                    onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
-                    placeholder={`Mínimo $${total.toLocaleString()}`}
+                    onChange={(e) => setAmountPaid(Math.min(total, Math.max(0, parseFloat(e.target.value) || 0)))}
+                    placeholder={createDebt ? `$0 - $${total.toLocaleString()}` : `Mínimo $${total.toLocaleString()}`}
                     className="h-9"
                   />
                 </div>
               )}
 
               {/* Change */}
-              {!createDebt && paymentMethod === 'cash' && amountPaid > 0 && (
+              {paymentMethod === 'cash' && amountPaid > total && (
                 <div className={`flex justify-between text-sm font-medium rounded-lg px-3 py-2 ${
                   change >= 0 ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400'
                 }`}>

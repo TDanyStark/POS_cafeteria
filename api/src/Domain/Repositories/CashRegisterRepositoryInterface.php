@@ -80,4 +80,5 @@ interface CashRegisterRepositoryInterface
      * Sum of sales paid with transfer for a register.
      */
     public function sumTransferSales(int $cashRegisterId): float;
+
 }
