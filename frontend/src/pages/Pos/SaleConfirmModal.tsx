@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import type { Sale } from '@/types/sales'
-import { CheckCircle2, ShoppingBag } from 'lucide-react'
+import { CheckCircle2, ShoppingBag, AlertTriangle } from 'lucide-react'
 import { formatCurrency } from '@/utils/format'
 
 interface SaleConfirmModalProps {
@@ -20,6 +20,8 @@ interface SaleConfirmModalProps {
 
 export function SaleConfirmModal({ sale, open, onClose }: SaleConfirmModalProps) {
   if (!sale) return null
+
+  const hasDebt = sale.debt != null && sale.debt.remaining_amount > 0
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -76,6 +78,30 @@ export function SaleConfirmModal({ sale, open, onClose }: SaleConfirmModalProps)
               <span>Cambio</span>
               <span>{formatCurrency(sale.change_amount)}</span>
             </div>
+          )}
+
+          {hasDebt && sale.debt && (
+            <>
+              <Separator />
+              <div className="rounded-lg border border-amber-400/40 bg-amber-50 dark:bg-amber-950/30 p-3 space-y-2">
+                <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 text-xs font-semibold uppercase tracking-wide">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  Venta a crédito
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Abonado</span>
+                  <span className="font-medium text-green-600 dark:text-green-400">
+                    {formatCurrency(sale.amount_paid)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Saldo pendiente</span>
+                  <span className="font-bold text-amber-700 dark:text-amber-400">
+                    {formatCurrency(sale.debt.remaining_amount)}
+                  </span>
+                </div>
+              </div>
+            </>
           )}
         </div>
 

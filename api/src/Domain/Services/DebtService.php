@@ -54,7 +54,6 @@ class DebtService
             throw new \InvalidArgumentException('El monto del abono debe ser mayor a 0.');
         }
 
-        // remaining_amount from findById already includes s.amount_paid in the calculation
         $newRemainingAmount = (int) $debt['remaining_amount'] - $amount;
 
         if ($newRemainingAmount < 0) {
@@ -63,7 +62,7 @@ class DebtService
             );
         }
 
-        // Prevent overpayment: ensure total paid (cd.paid_amount + s.amount_paid + new payment) never exceeds original
+        // paid_amount now correctly represents total paid (including initial payment)
         $totalPaidAfter = (int) $debt['paid_amount'] + $amount;
         if ($totalPaidAfter > (int) $debt['original_amount']) {
             throw new \InvalidArgumentException(
@@ -73,7 +72,6 @@ class DebtService
 
         $newStatus = $newRemainingAmount <= 0 ? 'paid' : 'partial';
 
-        // Require open cash register for all debt payments
         if ($this->isCashRegisterGlobalScope()) {
             $cashRegister = $this->cashRegisterRepository->findOpenGlobal();
         } else {
@@ -95,7 +93,6 @@ class DebtService
             $notes
         );
 
-        // Create cash movement for cash payments
         if ($paymentMethod === 'cash') {
             $customerName = $debt['customer_name'] ?? 'Cliente';
             $description = sprintf('Abono deuda - %s', $customerName);
@@ -111,27 +108,17 @@ class DebtService
             );
         }
 
-        // Update logic:
-        // - DB cd.paid_amount stores ONLY post-sale payments (abonos posteriores)
-        // - findById returns paid_amount = cd.paid_amount + s.amount_paid (computed)
-        // - We need to extract the DB cd.paid_amount and add the new payment
-        //
-        // IMPORTANT: $debt['paid_amount'] is already computed (cd.paid_amount + s.amount_paid)
-        // So: current Db CdPaidAmount = $debt['paid_amount'] - $debt['amount_paid']
-        $currentDbCdPaidAmount = (int) $debt['paid_amount'] - (int) $debt['amount_paid'];
-        $newDbCdPaidAmount = $currentDbCdPaidAmount + $amount;
+        // Now paid_amount in DB correctly stores total paid (initial + abonos)
+        $newPaidAmount = (int) $debt['paid_amount'] + $amount;
+        $newDbRemainingAmount = (int) $debt['original_amount'] - $newPaidAmount;
 
-        // remaining_amount in DB = original_amount - s.amount_paid - newDbCdPaidAmount
-        $newDbRemainingAmount = (int) $debt['original_amount'] - (int) $debt['amount_paid'] - $newDbCdPaidAmount;
-
-        // Safety: ensure remaining is never negative
         if ($newDbRemainingAmount < 0) {
             $newDbRemainingAmount = 0;
         }
 
         $this->debtRepository->update(
             $debtId,
-            $newDbCdPaidAmount,
+            $newPaidAmount,
             $newDbRemainingAmount,
             $newStatus
         );

@@ -182,7 +182,25 @@ class SaleService
             throw $e;
         }
 
-        return $this->saleRepository->findById($saleId);
+        $sale = $this->saleRepository->findById($saleId);
+
+        // Attach debt info if one was created in this transaction
+        if ($debtId !== null) {
+            $debt = $this->debtRepository->findById($debtId);
+            if ($debt !== null) {
+                $sale['debt'] = [
+                    'id'               => (int) $debt['id'],
+                    'original_amount'  => (int) $debt['original_amount'],
+                    'paid_amount'      => (int) $debt['paid_amount'],
+                    'remaining_amount' => (int) $debt['remaining_amount'],
+                    'status'           => $debt['status'],
+                ];
+            }
+        } else {
+            $sale['debt'] = null;
+        }
+
+        return $sale;
     }
 
     /**

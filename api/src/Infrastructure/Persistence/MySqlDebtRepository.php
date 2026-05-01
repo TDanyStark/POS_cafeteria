@@ -23,8 +23,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
                    s.total AS sale_total,
                    s.payment_method,
                    s.amount_paid,
-                   s.created_at AS sale_created_at,
-                   (cd.paid_amount + s.amount_paid) AS computed_paid_amount
+                   s.created_at AS sale_created_at
             FROM customer_debts cd
             INNER JOIN customers c ON c.id = cd.customer_id
             INNER JOIN sales s ON s.id = cd.sale_id
@@ -33,11 +32,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         $stmt->execute(['id' => $id]);
         $debt = $stmt->fetch();
         if ($debt) {
-            $debt['paid_amount'] = (int) $debt['computed_paid_amount'];
-            // Ensure paid_amount never exceeds original_amount for display
-            if ($debt['paid_amount'] > (int) $debt['original_amount']) {
-                $debt['paid_amount'] = (int) $debt['original_amount'];
-            }
+            $debt['paid_amount'] = (int) $debt['paid_amount'];
             $debt['remaining_amount'] = max(0, (int) $debt['original_amount'] - $debt['paid_amount']);
         }
         return $debt ?: null;
@@ -50,8 +45,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
                    s.total AS sale_total,
                    s.payment_method,
                    s.amount_paid,
-                   s.created_at AS sale_created_at,
-                   (cd.paid_amount + s.amount_paid) AS computed_paid_amount
+                   s.created_at AS sale_created_at
             FROM customer_debts cd
             INNER JOIN sales s ON s.id = cd.sale_id
             WHERE cd.customer_id = :customer_id
@@ -60,11 +54,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         $stmt->execute(['customer_id' => $customerId]);
         $rows = $stmt->fetchAll();
         foreach ($rows as &$debt) {
-            $debt['paid_amount'] = (int) $debt['computed_paid_amount'];
-            // Ensure paid_amount never exceeds original_amount for display
-            if ($debt['paid_amount'] > (int) $debt['original_amount']) {
-                $debt['paid_amount'] = (int) $debt['original_amount'];
-            }
+            $debt['paid_amount'] = (int) $debt['paid_amount'];
             $debt['remaining_amount'] = max(0, (int) $debt['original_amount'] - $debt['paid_amount']);
         }
         return $rows;
@@ -80,8 +70,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
                    s.total AS sale_total,
                    s.payment_method,
                    s.amount_paid,
-                   s.created_at AS sale_created_at,
-                   (cd.paid_amount + s.amount_paid) AS computed_paid_amount
+                   s.created_at AS sale_created_at
             FROM customer_debts cd
             INNER JOIN customers c ON c.id = cd.customer_id
             INNER JOIN sales s ON s.id = cd.sale_id
@@ -90,11 +79,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         $stmt->execute(['sale_id' => $saleId]);
         $debt = $stmt->fetch();
         if ($debt) {
-            $debt['paid_amount'] = (int) $debt['computed_paid_amount'];
-            // Ensure paid_amount never exceeds original_amount for display
-            if ($debt['paid_amount'] > (int) $debt['original_amount']) {
-                $debt['paid_amount'] = (int) $debt['original_amount'];
-            }
+            $debt['paid_amount'] = (int) $debt['paid_amount'];
             $debt['remaining_amount'] = max(0, (int) $debt['original_amount'] - $debt['paid_amount']);
         }
         return $debt ?: null;
@@ -131,8 +116,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
                    s.total AS sale_total,
                    s.payment_method,
                    s.amount_paid,
-                   s.created_at AS sale_created_at,
-                   (cd.paid_amount + s.amount_paid) AS computed_paid_amount
+                   s.created_at AS sale_created_at
             FROM customer_debts cd
             INNER JOIN customers c ON c.id = cd.customer_id
             INNER JOIN sales s ON s.id = cd.sale_id
@@ -157,11 +141,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
 
         $rows = $stmt->fetchAll();
         foreach ($rows as &$debt) {
-            $debt['paid_amount'] = (int) $debt['computed_paid_amount'];
-            // Ensure paid_amount never exceeds original_amount for display
-            if ($debt['paid_amount'] > (int) $debt['original_amount']) {
-                $debt['paid_amount'] = (int) $debt['original_amount'];
-            }
+            $debt['paid_amount'] = (int) $debt['paid_amount'];
             $debt['remaining_amount'] = max(0, (int) $debt['original_amount'] - $debt['paid_amount']);
         }
         return $rows;
@@ -197,16 +177,19 @@ class MySqlDebtRepository implements DebtRepositoryInterface
 
     public function create(int $customerId, int $saleId, int $originalAmount, int $remainingAmount): int
     {
+        $paidAmount = $originalAmount - $remainingAmount;
+
         $stmt = $this->pdo->prepare('
             INSERT INTO customer_debts
                 (customer_id, sale_id, original_amount, paid_amount, remaining_amount, status, created_at, updated_at)
             VALUES
-                (:customer_id, :sale_id, :original_amount, 0, :remaining_amount, :status, NOW(), NOW())
+                (:customer_id, :sale_id, :original_amount, :paid_amount, :remaining_amount, :status, NOW(), NOW())
         ');
         $stmt->execute([
             'customer_id'     => $customerId,
             'sale_id'         => $saleId,
             'original_amount' => $originalAmount,
+            'paid_amount'     => $paidAmount,
             'remaining_amount' => $remainingAmount,
             'status'          => 'pending',
         ]);
