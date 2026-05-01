@@ -46,12 +46,12 @@ function App() {
               <Route path="/cash-register/:id" element={<CashRegisterDetailPage />} />
               <Route path="/sales" element={<SalesPage />} />
               <Route path="/debtors" element={<DebtorsPage />} />
+              <Route path="/customers" element={<CustomersPage />} />
             </Route>
 
             <Route element={<RoleRoute allowedRoles={['admin']} />}>
               <Route path="/products" element={<ProductsPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/customers" element={<CustomersPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/settings" element={<SettingsPage />} />

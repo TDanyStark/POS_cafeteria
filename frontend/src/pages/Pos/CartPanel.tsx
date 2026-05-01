@@ -30,14 +30,10 @@ export function CartPanel() {
   const setCreateDebt = useCartStore((s) => s.setCreateDebt)
   const clearCart = useCartStore((s) => s.clearCart)
   const getTotal = useCartStore((s) => s.getTotal)
-  const getChange = useCartStore((s) => s.getChange)
-  const getPendingDebt = useCartStore((s) => s.getPendingDebt)
 
   const createSale = useCreateSale()
 
   const total = getTotal()
-  const change = getChange()
-  const pendingDebt = getPendingDebt()
   const canPay = items.length > 0 && (
     paymentMethod === 'transfer'
       ? true
@@ -53,6 +49,11 @@ export function CartPanel() {
     }
   }, [paymentMethod, total, setAmountPaid])
 
+  useEffect(() => {
+    if (createDebt) {
+      setAmountPaid(0)
+    }
+  }, [createDebt, setAmountPaid])
 
   const handleCheckout = async () => {
     if (!canPay) return
@@ -187,21 +188,27 @@ export function CartPanel() {
                 </div>
               )}
 
-              {/* Change */}
-              {paymentMethod === 'cash' && amountPaid > total && (
+              {/* Change / Pending display */}
+              {paymentMethod === 'cash' && !createDebt && (
                 <div className={`flex justify-between text-sm font-medium rounded-lg px-3 py-2 ${
-                  change >= 0 ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400'
+                  amountPaid >= total
+                    ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400'
+                    : 'bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400'
                 }`}>
-                  <span>Cambio</span>
-                  <span>{formatCurrency(change)}</span>
+                  <span>{amountPaid >= total ? 'Cambio' : 'Pendiente'}</span>
+                  <span>
+                    {amountPaid >= total
+                      ? formatCurrency(amountPaid - total)
+                      : formatCurrency(total - amountPaid)}
+                  </span>
                 </div>
               )}
 
               {/* Pending Debt Display */}
-              {createDebt && pendingDebt > 0 && (
+              {createDebt && (
                 <div className="flex justify-between text-sm font-medium rounded-lg px-3 py-2 bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
                   <span>Pendiente</span>
-                  <span>{formatCurrency(pendingDebt)}</span>
+                  <span>{formatCurrency(total - amountPaid)}</span>
                 </div>
               )}
 

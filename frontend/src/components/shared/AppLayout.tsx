@@ -40,6 +40,7 @@ const cashierNavItems = [
   { icon: Wallet, label: 'Caja', path: '/cash-register' },
   { icon: Receipt, label: 'Ventas', path: '/sales' },
   { icon: UserMinus, label: 'Deudores', path: '/debtors' },
+  { icon: Users, label: 'Clientes', path: '/customers' },
 ]
 
 export function AppLayout() {
