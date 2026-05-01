@@ -44,8 +44,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         $stmt->execute(['id' => $id]);
         $debt = $stmt->fetch();
         if ($debt) {
-            $debt['paid_amount'] = (int) $debt['paid_amount'];
-            $debt['remaining_amount'] = max(0, (int) $debt['original_amount'] - $debt['paid_amount']);
+            $this->mapDebt($debt);
         }
         return $debt ?: null;
     }
@@ -66,8 +65,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         $stmt->execute(['customer_id' => $customerId]);
         $rows = $stmt->fetchAll();
         foreach ($rows as &$debt) {
-            $debt['paid_amount'] = (int) $debt['paid_amount'];
-            $debt['remaining_amount'] = max(0, (int) $debt['original_amount'] - $debt['paid_amount']);
+            $this->mapDebt($debt);
         }
         return $rows;
     }
@@ -91,8 +89,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         $stmt->execute(['sale_id' => $saleId]);
         $debt = $stmt->fetch();
         if ($debt) {
-            $debt['paid_amount'] = (int) $debt['paid_amount'];
-            $debt['remaining_amount'] = max(0, (int) $debt['original_amount'] - $debt['paid_amount']);
+            $this->mapDebt($debt);
         }
         return $debt ?: null;
     }
@@ -153,8 +150,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
 
         $rows = $stmt->fetchAll();
         foreach ($rows as &$debt) {
-            $debt['paid_amount'] = (int) $debt['paid_amount'];
-            $debt['remaining_amount'] = max(0, (int) $debt['original_amount'] - $debt['paid_amount']);
+            $this->mapDebt($debt);
         }
         return $rows;
     }

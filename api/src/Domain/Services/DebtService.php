@@ -54,19 +54,12 @@ class DebtService
             throw new \InvalidArgumentException('El monto del abono debe ser mayor a 0.');
         }
 
+        // remaining_amount comes from mapDebt: already includes initial payment
         $newRemainingAmount = (int) $debt['remaining_amount'] - $amount;
 
         if ($newRemainingAmount < 0) {
             throw new \InvalidArgumentException(
                 'El monto del abono excede lo pendiente. Pendiente actual: ' . $debt['remaining_amount']
-            );
-        }
-
-        // paid_amount now correctly represents total paid (including initial payment)
-        $totalPaidAfter = (int) $debt['paid_amount'] + $amount;
-        if ($totalPaidAfter > (int) $debt['original_amount']) {
-            throw new \InvalidArgumentException(
-                'El monto del abono resultaría en un pago excesivo. Total pagado después del abono: ' . $totalPaidAfter . ', Original: ' . $debt['original_amount']
             );
         }
 
@@ -108,9 +101,11 @@ class DebtService
             );
         }
 
-        // Now paid_amount in DB correctly stores total paid (initial + abonos)
-        $newPaidAmount = (int) $debt['paid_amount'] + $amount;
-        $newDbRemainingAmount = (int) $debt['original_amount'] - $newPaidAmount;
+        // debt_paid_amount is only the later payments stored in DB (not initial)
+        // paid_amount from mapDebt = initial + debt_paid_amount (for display)
+        // We store in DB only the accumulated later payments
+        $newPaidAmount = (int) $debt['debt_paid_amount'] + $amount;
+        $newDbRemainingAmount = (int) $debt['original_amount'] - $newPaidAmount - (int) $debt['initial_payment_amount'];
 
         if ($newDbRemainingAmount < 0) {
             $newDbRemainingAmount = 0;
