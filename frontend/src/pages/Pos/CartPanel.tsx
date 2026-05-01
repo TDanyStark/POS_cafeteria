@@ -42,7 +42,7 @@ export function CartPanel() {
     paymentMethod === 'transfer'
       ? true
       : createDebt
-        ? amountPaid >= 0 && amountPaid <= total
+        ? amountPaid >= 0 && amountPaid < total
         : amountPaid >= total
   )
   const needsCustomerForDebt = createDebt && !customer
