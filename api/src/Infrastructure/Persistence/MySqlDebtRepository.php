@@ -157,18 +157,19 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         return (int) $stmt->fetchColumn();
     }
 
-    public function create(int $customerId, int $saleId, int $originalAmount, int $remainingAmount): int
+    public function create(int $customerId, int $saleId, int $originalAmount, int $paidAmount, int $remainingAmount): int
     {
         $stmt = $this->pdo->prepare('
             INSERT INTO customer_debts
                 (customer_id, sale_id, original_amount, paid_amount, remaining_amount, status, created_at, updated_at)
             VALUES
-                (:customer_id, :sale_id, :original_amount, 0, :remaining_amount, :status, NOW(), NOW())
+                (:customer_id, :sale_id, :original_amount, :paid_amount, :remaining_amount, :status, NOW(), NOW())
         ');
         $stmt->execute([
             'customer_id'     => $customerId,
             'sale_id'         => $saleId,
             'original_amount' => $originalAmount,
+            'paid_amount'     => $paidAmount,
             'remaining_amount' => $remainingAmount,
             'status'          => 'pending',
         ]);

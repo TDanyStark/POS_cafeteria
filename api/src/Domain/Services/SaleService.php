@@ -172,6 +172,7 @@ class SaleService
                     $customerId,
                     $saleId,
                     $total,
+                    $amountPaid,
                     $total - $amountPaid
                 );
             }

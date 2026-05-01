@@ -11,6 +11,6 @@ interface DebtRepositoryInterface
     public function findBySaleId(int $saleId): ?array;
     public function findAll(int $page, int $limit, array $filters = []): array;
     public function count(array $filters = []): int;
-    public function create(int $customerId, int $saleId, int $originalAmount, int $remainingAmount): int;
+    public function create(int $customerId, int $saleId, int $originalAmount, int $paidAmount, int $remainingAmount): int;
     public function update(int $id, int $paidAmount, int $remainingAmount, string $status): void;
 }

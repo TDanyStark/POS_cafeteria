@@ -36,7 +36,7 @@ class DebtService
             throw new \InvalidArgumentException('No hay deuda pendiente. El monto pagado es mayor o igual al total.');
         }
 
-        return $this->debtRepository->create($customerId, $saleId, $total, $remainingAmount);
+        return $this->debtRepository->create($customerId, $saleId, $total, $amountPaid, $remainingAmount);
     }
 
     public function addPayment(int $debtId, int $userId, int $amount, string $paymentMethod, ?string $notes = null): array
