@@ -288,6 +288,7 @@ export function CashRegisterDetailPage() {
                 <TableHead>Cliente</TableHead>
                 <TableHead>Método</TableHead>
                 <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Pagado</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
@@ -295,7 +296,7 @@ export function CashRegisterDetailPage() {
               {isLoadingSales ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 7 }).map((_, j) => (
+                    {Array.from({ length: 8 }).map((_, j) => (
                       <TableCell key={j}>
                         <Skeleton className="h-4 w-full" />
                       </TableCell>
@@ -304,46 +305,64 @@ export function CashRegisterDetailPage() {
                 ))
               ) : !salesData?.data || salesData.data.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
                     No hay ventas registradas en esta caja
                   </TableCell>
                 </TableRow>
               ) : (
-                salesData.data.map((sale) => (
-                  <TableRow key={sale.id} className="hover:bg-muted/50">
-                    <TableCell className="font-mono text-sm">#{sale.id}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                      {formatDate(sale.created_at)}
-                    </TableCell>
-                    <TableCell className="text-sm">{sale.cashier_name}</TableCell>
-                    <TableCell className="text-sm">
-                      {sale.customer_name ?? (
-                        <span className="text-muted-foreground italic">Anónimo</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={sale.payment_method === 'cash' ? 'secondary' : 'outline'}
-                        className="text-xs"
-                      >
-                        {sale.payment_method === 'cash' ? 'Efectivo' : 'Transferencia'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-semibold">
-                      {formatCurrency(sale.total)}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => setSelectedSaleId(sale.id)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                salesData.data.map((sale) => {
+                  const hasDebt = sale.amount_paid < sale.total
+                  return (
+                    <TableRow key={sale.id} className="hover:bg-muted/50">
+                      <TableCell className="font-mono text-sm">#{sale.id}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                        {formatDate(sale.created_at)}
+                      </TableCell>
+                      <TableCell className="text-sm">{sale.cashier_name}</TableCell>
+                      <TableCell className="text-sm">
+                        {sale.customer_name ?? (
+                          <span className="text-muted-foreground italic">Anónimo</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Badge
+                            variant={sale.payment_method === 'cash' ? 'secondary' : 'outline'}
+                            className="text-xs"
+                          >
+                            {sale.payment_method === 'cash' ? 'Efectivo' : 'Transferencia'}
+                          </Badge>
+                          {hasDebt && (
+                            <Badge variant="outline" className="text-xs border-amber-500/40 text-amber-600 dark:text-amber-400">
+                              Deuda
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {formatCurrency(sale.total)}
+                      </TableCell>
+                      <TableCell className={cn(
+                        'text-right font-semibold',
+                        hasDebt
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-green-600 dark:text-green-400'
+                      )}>
+                        {formatCurrency(sale.amount_paid)}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => setSelectedSaleId(sale.id)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
               )}
             </TableBody>
           </Table>
