@@ -76,10 +76,13 @@ class MySqlSaleRepository implements SaleRepositoryInterface
         $sql = "
             SELECT s.*,
                    u.name  AS cashier_name,
-                   c.name  AS customer_name
+                   c.name  AS customer_name,
+                   cd.status           AS debt_status,
+                   cd.remaining_amount AS debt_remaining
             FROM sales s
             INNER JOIN users u ON u.id = s.user_id
             LEFT  JOIN customers c ON c.id = s.customer_id
+            LEFT  JOIN customer_debts cd ON cd.sale_id = s.id
             {$whereClause}
             ORDER BY s.created_at DESC
             LIMIT :limit OFFSET :offset

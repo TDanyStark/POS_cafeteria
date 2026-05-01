@@ -18,8 +18,9 @@ import { SaleDetailModal } from './SaleDetailModal'
 import { DateRangePicker } from '@/components/shared/DateRangePicker'
 import type { PaymentMethod, SaleFilters } from '@/types/sales'
 import type { DateRange } from 'react-day-picker'
-import { Eye, RotateCcw } from 'lucide-react'
-import { formatDate } from '@/utils/format'
+import { Eye, RotateCcw, AlertCircle, Clock, CheckCircle2 } from 'lucide-react'
+import { formatCurrency, formatDate } from '@/utils/format'
+import { cn } from '@/lib/utils'
 
 export function SalesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -152,6 +153,7 @@ export function SalesPage() {
               <TableHead>Cliente</TableHead>
               <TableHead>Caja</TableHead>
               <TableHead>Método</TableHead>
+              <TableHead>Deuda</TableHead>
               <TableHead className="text-right">Total</TableHead>
               <TableHead className="w-16"></TableHead>
             </TableRow>
@@ -160,7 +162,7 @@ export function SalesPage() {
             {isLoading ? (
               Array.from({ length: 10 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 8 }).map((_, j) => (
+                  {Array.from({ length: 9 }).map((_, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -169,7 +171,7 @@ export function SalesPage() {
               ))
             ) : data?.data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                   No se encontraron ventas
                 </TableCell>
               </TableRow>
@@ -195,8 +197,34 @@ export function SalesPage() {
                       {sale.payment_method === 'cash' ? 'Efectivo' : 'Transferencia'}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right font-semibold">
-                    ${sale.total.toLocaleString()}
+                  <TableCell>
+                    {sale.debt_status === 'pending' && (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400">
+                        <AlertCircle className="h-3 w-3" />
+                        {formatCurrency(sale.debt_remaining ?? 0)}
+                      </span>
+                    )}
+                    {sale.debt_status === 'partial' && (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 dark:text-amber-400">
+                        <Clock className="h-3 w-3" />
+                        {formatCurrency(sale.debt_remaining ?? 0)}
+                      </span>
+                    )}
+                    {sale.debt_status === 'paid' && (
+                      <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Saldada
+                      </span>
+                    )}
+                    {!sale.debt_status && (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className={cn(
+                    'text-right font-semibold',
+                    sale.debt_status && sale.debt_status !== 'paid' ? 'text-red-600 dark:text-red-400' : ''
+                  )}>
+                    {formatCurrency(sale.total)}
                   </TableCell>
                   <TableCell>
                     <Button

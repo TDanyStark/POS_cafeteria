@@ -20,6 +20,14 @@ export interface SaleItem {
 
 export type PaymentMethod = 'cash' | 'transfer'
 
+export interface SaleDebt {
+  id: number
+  original_amount: number
+  paid_amount: number
+  remaining_amount: number
+  status: 'pending' | 'partial' | 'paid'
+}
+
 export interface Sale {
   id: number
   cash_register_id: number
@@ -35,6 +43,11 @@ export interface Sale {
   change_amount: number
   notes: string | null
   items: SaleItem[]
+  /** Present in GET /sales/{id} response */
+  debt?: SaleDebt | null
+  /** Present in GET /sales list response */
+  debt_status?: 'pending' | 'partial' | 'paid' | null
+  debt_remaining?: number | null
   created_at: string
   updated_at: string
 }

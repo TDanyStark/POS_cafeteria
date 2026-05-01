@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSale } from '@/hooks/useSales'
-import { formatDate } from '@/utils/format'
+import { formatCurrency, formatDate } from '@/utils/format'
+import { AlertCircle, CheckCircle2, Clock } from 'lucide-react'
 
 interface SaleDetailModalProps {
   saleId: number | null
@@ -73,19 +74,66 @@ export function SaleDetailModal({ saleId, onClose }: SaleDetailModalProps) {
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Monto pagado</span>
-                <span>${sale.amount_paid.toLocaleString()}</span>
+                <span>{formatCurrency(sale.amount_paid)}</span>
               </div>
-              {sale.payment_method === 'cash' && (
+              {sale.payment_method === 'cash' && sale.change_amount > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Cambio</span>
-                  <span>${sale.change_amount.toLocaleString()}</span>
+                  <span>{formatCurrency(sale.change_amount)}</span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-base pt-1">
                 <span>Total</span>
-                <span className="text-primary">${sale.total.toLocaleString()}</span>
+                <span className="text-primary">{formatCurrency(sale.total)}</span>
               </div>
             </div>
+
+            {sale.debt && sale.debt.status !== 'paid' && (
+              <>
+                <Separator />
+                <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-red-600 dark:text-red-400">
+                    {sale.debt.status === 'partial' ? (
+                      <Clock className="h-4 w-4" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4" />
+                    )}
+                    {sale.debt.status === 'partial' ? 'Deuda parcialmente pagada' : 'Venta con deuda pendiente'}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <p className="text-muted-foreground">Original</p>
+                      <p className="font-medium">{formatCurrency(sale.debt.original_amount)}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Abonado</p>
+                      <p className="font-medium text-green-600 dark:text-green-400">
+                        {formatCurrency(sale.debt.paid_amount)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Saldo</p>
+                      <p className="font-bold text-red-600 dark:text-red-400">
+                        {formatCurrency(sale.debt.remaining_amount)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {sale.debt?.status === 'paid' && (
+              <>
+                <Separator />
+                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 bg-green-500/5 border border-green-500/30 rounded-lg p-3">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span className="font-medium">Deuda saldada</span>
+                  <span className="ml-auto text-muted-foreground">
+                    {formatCurrency(sale.debt.original_amount)}
+                  </span>
+                </div>
+              </>
+            )}
 
             {sale.notes && (
               <div className="text-sm">

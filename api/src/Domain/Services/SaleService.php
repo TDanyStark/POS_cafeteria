@@ -208,7 +208,7 @@ class SaleService
     }
 
     /**
-     * Get a sale by ID.
+     * Get a sale by ID, including debt info if it exists.
      */
     public function getById(int $id): array
     {
@@ -216,6 +216,19 @@ class SaleService
 
         if ($sale === null) {
             throw new \InvalidArgumentException('Venta no encontrada.');
+        }
+
+        $debt = $this->debtRepository->findBySaleId($id);
+        if ($debt !== null) {
+            $sale['debt'] = [
+                'id'               => (int) $debt['id'],
+                'original_amount'  => (float) $debt['original_amount'],
+                'paid_amount'      => (float) $debt['paid_amount'],
+                'remaining_amount' => (float) $debt['remaining_amount'],
+                'status'           => $debt['status'],
+            ];
+        } else {
+            $sale['debt'] = null;
         }
 
         return $sale;
