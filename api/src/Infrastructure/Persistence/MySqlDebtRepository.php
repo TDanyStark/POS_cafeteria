@@ -34,7 +34,11 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         $debt = $stmt->fetch();
         if ($debt) {
             $debt['paid_amount'] = (int) $debt['computed_paid_amount'];
-            $debt['remaining_amount'] = (int) $debt['original_amount'] - $debt['paid_amount'];
+            // Ensure paid_amount never exceeds original_amount for display
+            if ($debt['paid_amount'] > (int) $debt['original_amount']) {
+                $debt['paid_amount'] = (int) $debt['original_amount'];
+            }
+            $debt['remaining_amount'] = max(0, (int) $debt['original_amount'] - $debt['paid_amount']);
         }
         return $debt ?: null;
     }
@@ -57,7 +61,11 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         $rows = $stmt->fetchAll();
         foreach ($rows as &$debt) {
             $debt['paid_amount'] = (int) $debt['computed_paid_amount'];
-            $debt['remaining_amount'] = (int) $debt['original_amount'] - $debt['paid_amount'];
+            // Ensure paid_amount never exceeds original_amount for display
+            if ($debt['paid_amount'] > (int) $debt['original_amount']) {
+                $debt['paid_amount'] = (int) $debt['original_amount'];
+            }
+            $debt['remaining_amount'] = max(0, (int) $debt['original_amount'] - $debt['paid_amount']);
         }
         return $rows;
     }
@@ -83,7 +91,11 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         $debt = $stmt->fetch();
         if ($debt) {
             $debt['paid_amount'] = (int) $debt['computed_paid_amount'];
-            $debt['remaining_amount'] = (int) $debt['original_amount'] - $debt['paid_amount'];
+            // Ensure paid_amount never exceeds original_amount for display
+            if ($debt['paid_amount'] > (int) $debt['original_amount']) {
+                $debt['paid_amount'] = (int) $debt['original_amount'];
+            }
+            $debt['remaining_amount'] = max(0, (int) $debt['original_amount'] - $debt['paid_amount']);
         }
         return $debt ?: null;
     }
@@ -146,7 +158,11 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         $rows = $stmt->fetchAll();
         foreach ($rows as &$debt) {
             $debt['paid_amount'] = (int) $debt['computed_paid_amount'];
-            $debt['remaining_amount'] = (int) $debt['original_amount'] - $debt['paid_amount'];
+            // Ensure paid_amount never exceeds original_amount for display
+            if ($debt['paid_amount'] > (int) $debt['original_amount']) {
+                $debt['paid_amount'] = (int) $debt['original_amount'];
+            }
+            $debt['remaining_amount'] = max(0, (int) $debt['original_amount'] - $debt['paid_amount']);
         }
         return $rows;
     }
