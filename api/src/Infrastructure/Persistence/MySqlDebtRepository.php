@@ -179,6 +179,15 @@ class MySqlDebtRepository implements DebtRepositoryInterface
     {
         $paidAmount = $originalAmount - $remainingAmount;
 
+        // status correcto según bizant: partial si hay abono, pending si no, paid si saldo 0
+        if ($remainingAmount <= 0) {
+            $status = 'paid';
+        } elseif ($paidAmount > 0) {
+            $status = 'partial';
+        } else {
+            $status = 'pending';
+        }
+
         $stmt = $this->pdo->prepare('
             INSERT INTO customer_debts
                 (customer_id, sale_id, original_amount, paid_amount, remaining_amount, status, created_at, updated_at)
@@ -191,7 +200,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
             'original_amount' => $originalAmount,
             'paid_amount'     => $paidAmount,
             'remaining_amount' => $remainingAmount,
-            'status'          => 'pending',
+            'status'          => $status,
         ]);
         return (int) $this->pdo->lastInsertId();
     }
