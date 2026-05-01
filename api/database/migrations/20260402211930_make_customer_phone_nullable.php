@@ -17,10 +17,17 @@ final class MakeCustomerPhoneNullable extends AbstractMigration
      * Remember to call "create()" or "update()" and NOT "save()" when working
      * with the Table class.
      */
-    public function change(): void
+    public function up(): void
     {
         $table = $this->table('customers');
         $table->changeColumn('phone', 'string', ['limit' => 30, 'null' => true, 'default' => null])
+              ->update();
+    }
+
+    public function down(): void
+    {
+        $table = $this->table('customers');
+        $table->changeColumn('phone', 'string', ['limit' => 30, 'null' => false, 'default' => ''])
               ->update();
     }
 }

@@ -1,8 +1,9 @@
 param(
     [switch]$Quick,
     [switch]$Full,        # Incluye la carpeta vendor + ejecuta migrate/seed
-    [switch]$Reset,       # Ejecuta 'composer reset' en el servidor
-    [switch]$Migrate      # Solo ejecuta migraciones en el servidor
+    [switch]$Reset,       # Solo ejecuta 'composer reset' en el servidor
+    [switch]$Migrate,     # Solo ejecuta migraciones en el servidor
+    [switch]$Seed         # Solo ejecuta seeders en el servidor
 )
 
 $ErrorActionPreference = "Stop"
@@ -58,6 +59,18 @@ function Send-SecureFile {
 if ($Migrate) {
     Write-Host "Ejecutando migraciones en el servidor..." -ForegroundColor Cyan
     Invoke-Ssh "composer migrate" -WorkDir $RemoteApiPath
+    exit
+}
+
+if ($Seed) {
+    Write-Host "Ejecutando seeders en el servidor..." -ForegroundColor Cyan
+    Invoke-Ssh "composer seed" -WorkDir $RemoteApiPath
+    exit
+}
+
+if ($Reset) {
+    Write-Host "Ejecutando COMPOSER RESET en el servidor..." -ForegroundColor Yellow
+    Invoke-Ssh "composer reset" -WorkDir $RemoteApiPath
     exit
 }
 
@@ -134,12 +147,7 @@ Send-SecureFile "$PSScriptRoot\htaccess" ".htaccess"
 Write-Host "Restaurando .env..." -ForegroundColor Cyan
 Invoke-Ssh "[ -f ../.env_pos.bak ] && mv ../.env_pos.bak api/.env || echo 'No hay backup que restaurar'"
 
-# 9. Tareas de Base de Datos (Nuevas banderas)
-if ($Reset) {
-    Write-Host "Ejecutando COMPOSER RESET en el servidor..." -ForegroundColor Yellow
-    Invoke-Ssh "composer reset" -WorkDir $RemoteApiPath
-}
-
+# 9. Tareas de Base de Datos
 if ($Full) {
     Write-Host "Modo Full Detectado: Ejecutando MIGRACIONES y SEEDERS..." -ForegroundColor Cyan
     Invoke-Ssh "composer migrate" -WorkDir $RemoteApiPath
