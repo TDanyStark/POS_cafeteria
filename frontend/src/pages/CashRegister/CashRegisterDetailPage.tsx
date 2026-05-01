@@ -311,7 +311,9 @@ export function CashRegisterDetailPage() {
                 </TableRow>
               ) : (
                 salesData.data.map((sale) => {
-                  const hasDebt = sale.amount_paid < sale.total
+                  const paidLess = Number(sale.amount_paid) < Number(sale.total)
+                  const debtPending = sale.debt_status != null && sale.debt_status !== 'paid'
+                  const hasDebt = paidLess && debtPending
                   return (
                     <TableRow key={sale.id} className="hover:bg-muted/50">
                       <TableCell className="font-mono text-sm">#{sale.id}</TableCell>
@@ -346,7 +348,9 @@ export function CashRegisterDetailPage() {
                         'text-right font-semibold',
                         hasDebt
                           ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-green-600 dark:text-green-400'
+                          : paidLess && !debtPending
+                            ? 'text-muted-foreground'
+                            : 'text-green-600 dark:text-green-400'
                       )}>
                         {formatCurrency(sale.amount_paid)}
                       </TableCell>
