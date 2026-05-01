@@ -23,7 +23,8 @@ class MySqlDebtRepository implements DebtRepositoryInterface
                    s.total AS sale_total,
                    s.payment_method,
                    s.amount_paid,
-                   s.created_at AS sale_created_at
+                   s.created_at AS sale_created_at,
+                   (cd.paid_amount + s.amount_paid) AS computed_paid_amount
             FROM customer_debts cd
             INNER JOIN customers c ON c.id = cd.customer_id
             INNER JOIN sales s ON s.id = cd.sale_id
@@ -31,6 +32,10 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         ');
         $stmt->execute(['id' => $id]);
         $debt = $stmt->fetch();
+        if ($debt) {
+            $debt['paid_amount'] = (int) $debt['computed_paid_amount'];
+            $debt['remaining_amount'] = (int) $debt['original_amount'] - $debt['paid_amount'];
+        }
         return $debt ?: null;
     }
 
@@ -41,14 +46,20 @@ class MySqlDebtRepository implements DebtRepositoryInterface
                    s.total AS sale_total,
                    s.payment_method,
                    s.amount_paid,
-                   s.created_at AS sale_created_at
+                   s.created_at AS sale_created_at,
+                   (cd.paid_amount + s.amount_paid) AS computed_paid_amount
             FROM customer_debts cd
             INNER JOIN sales s ON s.id = cd.sale_id
             WHERE cd.customer_id = :customer_id
             ORDER BY cd.created_at DESC
         ');
         $stmt->execute(['customer_id' => $customerId]);
-        return $stmt->fetchAll();
+        $rows = $stmt->fetchAll();
+        foreach ($rows as &$debt) {
+            $debt['paid_amount'] = (int) $debt['computed_paid_amount'];
+            $debt['remaining_amount'] = (int) $debt['original_amount'] - $debt['paid_amount'];
+        }
+        return $rows;
     }
 
     public function findBySaleId(int $saleId): ?array
@@ -61,7 +72,8 @@ class MySqlDebtRepository implements DebtRepositoryInterface
                    s.total AS sale_total,
                    s.payment_method,
                    s.amount_paid,
-                   s.created_at AS sale_created_at
+                   s.created_at AS sale_created_at,
+                   (cd.paid_amount + s.amount_paid) AS computed_paid_amount
             FROM customer_debts cd
             INNER JOIN customers c ON c.id = cd.customer_id
             INNER JOIN sales s ON s.id = cd.sale_id
@@ -69,6 +81,10 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         ');
         $stmt->execute(['sale_id' => $saleId]);
         $debt = $stmt->fetch();
+        if ($debt) {
+            $debt['paid_amount'] = (int) $debt['computed_paid_amount'];
+            $debt['remaining_amount'] = (int) $debt['original_amount'] - $debt['paid_amount'];
+        }
         return $debt ?: null;
     }
 
@@ -103,7 +119,8 @@ class MySqlDebtRepository implements DebtRepositoryInterface
                    s.total AS sale_total,
                    s.payment_method,
                    s.amount_paid,
-                   s.created_at AS sale_created_at
+                   s.created_at AS sale_created_at,
+                   (cd.paid_amount + s.amount_paid) AS computed_paid_amount
             FROM customer_debts cd
             INNER JOIN customers c ON c.id = cd.customer_id
             INNER JOIN sales s ON s.id = cd.sale_id
@@ -126,7 +143,12 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
 
-        return $stmt->fetchAll();
+        $rows = $stmt->fetchAll();
+        foreach ($rows as &$debt) {
+            $debt['paid_amount'] = (int) $debt['computed_paid_amount'];
+            $debt['remaining_amount'] = (int) $debt['original_amount'] - $debt['paid_amount'];
+        }
+        return $rows;
     }
 
     public function count(array $filters = []): int
