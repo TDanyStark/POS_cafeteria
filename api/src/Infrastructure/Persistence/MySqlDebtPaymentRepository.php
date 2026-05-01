@@ -29,7 +29,7 @@ class MySqlDebtPaymentRepository implements DebtPaymentRepositoryInterface
         return $stmt->fetchAll();
     }
 
-    public function create(int $debtId, int $userId, ?int $cashRegisterId, float $amount, string $paymentMethod, ?string $notes): int
+    public function create(int $debtId, int $userId, ?int $cashRegisterId, int $amount, string $paymentMethod, ?string $notes): int
     {
         $stmt = $this->pdo->prepare('
             INSERT INTO debt_payments

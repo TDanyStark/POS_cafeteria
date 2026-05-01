@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useDailySummary, useLatestSales, useStockAlerts } from '@/hooks/useDashboard'
 import { Link } from 'react-router-dom'
-import { formatTime } from '@/utils/format'
+import { formatTime, formatCurrency } from '@/utils/format'
 
 export function DashboardPage() {
   const { data: summary, isLoading: summaryLoading } = useDailySummary()
@@ -31,7 +31,7 @@ export function DashboardPage() {
             ) : (
               <>
                 <div className="text-2xl font-bold">
-                  ${summary?.total_amount.toLocaleString() ?? '0'}
+                  {formatCurrency(summary?.total_amount ?? 0)}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {summary?.total_sales ?? 0} transacciones
@@ -52,7 +52,7 @@ export function DashboardPage() {
             ) : (
               <>
                 <div className="text-2xl font-bold">
-                  ${summary?.total_cash.toLocaleString() ?? '0'}
+                  {formatCurrency(summary?.total_cash ?? 0)}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {summary?.total_sales ? Math.round((summary.total_cash / summary.total_amount) * 100) : 0}%
@@ -73,7 +73,7 @@ export function DashboardPage() {
             ) : (
               <>
                 <div className="text-2xl font-bold">
-                  ${summary?.total_transfer.toLocaleString() ?? '0'}
+                  {formatCurrency(summary?.total_transfer ?? 0)}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {summary?.total_sales ? Math.round((summary.total_transfer / summary.total_amount) * 100) : 0}%
@@ -140,7 +140,7 @@ export function DashboardPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">${sale.total.toLocaleString()}</p>
+                      <p className="font-semibold">{formatCurrency(sale.total)}</p>
                       <Badge
                         variant={sale.payment_method === 'cash' ? 'secondary' : 'outline'}
                         className="text-xs"

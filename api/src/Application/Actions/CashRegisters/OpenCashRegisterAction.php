@@ -28,7 +28,7 @@ class OpenCashRegisterAction
         try {
             $register = $this->cashRegisterService->open(
                 (int) $user['id'],
-                (float) $body['initial_amount']
+                (int) $body['initial_amount']
             );
             $payload = ['success' => true, 'data' => $register];
             $status  = 201;

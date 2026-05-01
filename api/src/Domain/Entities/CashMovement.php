@@ -11,7 +11,7 @@ class CashMovement
         public readonly int $cashRegisterId,
         public readonly int $userId,
         public readonly string $type,
-        public readonly float $amount,
+        public readonly int $amount,
         public readonly string $description,
         public readonly string $createdAt,
         public readonly string $updatedAt,

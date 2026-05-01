@@ -104,7 +104,7 @@ class ProductService
             throw new \InvalidArgumentException('El nombre del producto es requerido.');
         }
 
-        if (!isset($data['price']) || (float) $data['price'] <= 0) {
+        if (!isset($data['price']) || (int) $data['price'] <= 0) {
             throw new \InvalidArgumentException('El precio debe ser mayor a 0.');
         }
 

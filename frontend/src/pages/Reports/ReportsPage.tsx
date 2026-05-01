@@ -10,6 +10,7 @@ import { useTopSellers, useSalesSummary } from '@/hooks/useReports'
 import { DateRangePicker } from '@/components/shared/DateRangePicker'
 import type { DateRange } from 'react-day-picker'
 import { Trophy, TrendingUp, RotateCcw } from 'lucide-react'
+import { formatCurrency } from '@/utils/format'
 
 export function ReportsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -184,7 +185,7 @@ function TopSellersList({
                 <div className="flex items-center justify-between">
                   <p className="font-medium truncate">{product.product_name}</p>
                   <p className="text-sm font-semibold">
-                    ${product.total_revenue.toLocaleString()}
+                    {formatCurrency(product.total_revenue)}
                   </p>
                 </div>
                 <div className="flex items-center justify-between mt-1">
@@ -274,7 +275,7 @@ function SalesSummaryView({ dateFrom, dateTo }: { dateFrom?: string; dateTo?: st
             <CardTitle className="text-sm font-medium">Total Ventas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">${data.total_amount.toLocaleString()}</div>
+            <div className="text-3xl font-bold">{formatCurrency(data.total_amount)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {data.total_sales} transacciones
             </p>
@@ -286,7 +287,7 @@ function SalesSummaryView({ dateFrom, dateTo }: { dateFrom?: string; dateTo?: st
             <CardTitle className="text-sm font-medium">Efectivo</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">${data.total_cash.toLocaleString()}</div>
+            <div className="text-3xl font-bold">{formatCurrency(data.total_cash)}</div>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="secondary">{cashPercentage}%</Badge>
               <span className="text-xs text-muted-foreground">
@@ -301,7 +302,7 @@ function SalesSummaryView({ dateFrom, dateTo }: { dateFrom?: string; dateTo?: st
             <CardTitle className="text-sm font-medium">Transferencia</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">${data.total_transfer.toLocaleString()}</div>
+            <div className="text-3xl font-bold">{formatCurrency(data.total_transfer)}</div>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="outline">{transferPercentage}%</Badge>
               <span className="text-xs text-muted-foreground">
@@ -332,7 +333,7 @@ function SalesSummaryView({ dateFrom, dateTo }: { dateFrom?: string; dateTo?: st
                       {method.payment_method === 'cash' ? 'Efectivo' : 'Transferencia'}
                     </span>
                     <div className="text-right">
-                      <span className="font-semibold">${method.total_amount.toLocaleString()}</span>
+                      <span className="font-semibold">{formatCurrency(method.total_amount)}</span>
                       <span className="text-muted-foreground text-sm ml-2">
                         ({method.total_sales} ventas)
                       </span>

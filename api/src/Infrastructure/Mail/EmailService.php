@@ -105,8 +105,8 @@ class EmailService
         foreach (($sale['items'] ?? []) as $item) {
             $name = htmlspecialchars((string) ($item['product_name'] ?? ''), ENT_QUOTES, 'UTF-8');
             $qty = (int) ($item['quantity'] ?? 0);
-            $price = number_format((float) ($item['unit_price'] ?? 0), 2, '.', ',');
-            $subtotal = number_format((float) ($item['subtotal'] ?? 0), 2, '.', ',');
+            $price = number_format((int) ($item['unit_price'] ?? 0), 0, ',', '.');
+            $subtotal = number_format((int) ($item['subtotal'] ?? 0), 0, ',', '.');
 
             $itemsRows .= "<tr>\n"
                 . "<td style='padding:8px;border-bottom:1px solid #e5e7eb;'>{$name}</td>\n"
@@ -116,9 +116,9 @@ class EmailService
                 . "</tr>";
         }
 
-        $total = number_format((float) ($sale['total'] ?? 0), 2, '.', ',');
-        $paid = number_format((float) ($sale['amount_paid'] ?? 0), 2, '.', ',');
-        $change = number_format((float) ($sale['change_amount'] ?? 0), 2, '.', ',');
+        $total = number_format((int) ($sale['total'] ?? 0), 0, ',', '.');
+        $paid = number_format((int) ($sale['amount_paid'] ?? 0), 0, ',', '.');
+        $change = number_format((int) ($sale['change_amount'] ?? 0), 0, ',', '.');
         $saleId = (int) ($sale['id'] ?? 0);
 
         return "
@@ -168,14 +168,14 @@ class EmailService
                 '- %s x%d = $ %s',
                 (string) ($item['product_name'] ?? ''),
                 (int) ($item['quantity'] ?? 0),
-                number_format((float) ($item['subtotal'] ?? 0), 2, '.', ',')
+                number_format((int) ($item['subtotal'] ?? 0), 0, ',', '.')
             );
         }
 
         $lines[] = '';
-        $lines[] = 'Total: $ ' . number_format((float) ($sale['total'] ?? 0), 2, '.', ',');
-        $lines[] = 'Pagado: $ ' . number_format((float) ($sale['amount_paid'] ?? 0), 2, '.', ',');
-        $lines[] = 'Cambio: $ ' . number_format((float) ($sale['change_amount'] ?? 0), 2, '.', ',');
+        $lines[] = 'Total: $ ' . number_format((int) ($sale['total'] ?? 0), 0, ',', '.');
+        $lines[] = 'Pagado: $ ' . number_format((int) ($sale['amount_paid'] ?? 0), 0, ',', '.');
+        $lines[] = 'Cambio: $ ' . number_format((int) ($sale['change_amount'] ?? 0), 0, ',', '.');
 
         return implode("\n", $lines);
     }

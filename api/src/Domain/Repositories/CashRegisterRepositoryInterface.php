@@ -44,17 +44,17 @@ interface CashRegisterRepositoryInterface
     /**
      * Open a new cash register.
      */
-    public function create(int $userId, float $initialAmount): int;
+    public function create(int $userId, int $initialAmount): int;
 
     /**
      * Close a cash register.
      */
-    public function close(int $id, int $closedByUserId, float $declaredAmount, float $finalAmount, float $difference): bool;
+    public function close(int $id, int $closedByUserId, int $declaredAmount, int $finalAmount, int $difference): bool;
 
     /**
      * Add a movement to a cash register.
      */
-    public function addMovement(int $cashRegisterId, int $userId, string $type, float $amount, string $description): int;
+    public function addMovement(int $cashRegisterId, int $userId, string $type, int $amount, string $description): int;
 
     /**
      * Get all movements for a cash register.
@@ -64,21 +64,21 @@ interface CashRegisterRepositoryInterface
     /**
      * Sum of cash-in movements for a register.
      */
-    public function sumCashIn(int $cashRegisterId): float;
+    public function sumCashIn(int $cashRegisterId): int;
 
     /**
      * Sum of cash-out movements for a register.
      */
-    public function sumCashOut(int $cashRegisterId): float;
+    public function sumCashOut(int $cashRegisterId): int;
 
     /**
      * Sum of sales paid with cash for a register.
      */
-    public function sumCashSales(int $cashRegisterId): float;
+    public function sumCashSales(int $cashRegisterId): int;
 
     /**
      * Sum of sales paid with transfer for a register.
      */
-    public function sumTransferSales(int $cashRegisterId): float;
+    public function sumTransferSales(int $cashRegisterId): int;
 
 }

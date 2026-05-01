@@ -33,7 +33,7 @@ class CashRegisterService
      * In global mode: checks if ANY register is open.
      * In personal mode: checks if THIS USER has an open register.
      */
-    public function open(int $userId, float $initialAmount): array
+    public function open(int $userId, int $initialAmount): array
     {
         if ($initialAmount < 0) {
             throw new \InvalidArgumentException('El monto inicial no puede ser negativo.');
@@ -62,7 +62,7 @@ class CashRegisterService
      * In global mode: any user can close any open register.
      * In personal mode: only the owner can close their register.
      */
-    public function close(int $registerId, int $userId, float $declaredAmount): array
+    public function close(int $registerId, int $userId, int $declaredAmount): array
     {
         $register = $this->cashRegisterRepository->findById($registerId);
 
@@ -85,7 +85,7 @@ class CashRegisterService
         $cashIn        = $this->cashRegisterRepository->sumCashIn($registerId);
         $cashOut       = $this->cashRegisterRepository->sumCashOut($registerId);
         $cashSales     = $this->cashRegisterRepository->sumCashSales($registerId);
-        $finalAmount   = (float) $register['initial_amount'] + $cashIn - $cashOut + $cashSales;
+        $finalAmount   = (int) $register['initial_amount'] + $cashIn - $cashOut + $cashSales;
         $difference    = $declaredAmount - $finalAmount;
 
         $this->cashRegisterRepository->close($registerId, $userId, $declaredAmount, $finalAmount, $difference);
@@ -130,7 +130,7 @@ class CashRegisterService
     /**
      * Add a manual cash movement (in/out).
      */
-    public function addMovement(int $registerId, int $userId, string $type, float $amount, string $description): array
+    public function addMovement(int $registerId, int $userId, string $type, int $amount, string $description): array
     {
         $register = $this->cashRegisterRepository->findById($registerId);
 

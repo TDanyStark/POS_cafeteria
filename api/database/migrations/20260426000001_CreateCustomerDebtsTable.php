@@ -12,9 +12,9 @@ final class CreateCustomerDebtsTable extends AbstractMigration
         $table
             ->addColumn('customer_id', 'integer', ['signed' => false, 'null' => false])
             ->addColumn('sale_id', 'integer', ['signed' => false, 'null' => false])
-            ->addColumn('original_amount', 'decimal', ['precision' => 10, 'scale' => 2])
-            ->addColumn('paid_amount', 'decimal', ['precision' => 10, 'scale' => 2, 'default' => '0.00'])
-            ->addColumn('remaining_amount', 'decimal', ['precision' => 10, 'scale' => 2])
+            ->addColumn('original_amount', 'biginteger', ['default' => 0])
+            ->addColumn('paid_amount', 'biginteger', ['default' => 0])
+            ->addColumn('remaining_amount', 'biginteger', ['default' => 0])
             ->addColumn('status', 'enum', ['values' => ['pending', 'partial', 'paid'], 'default' => 'pending'])
             ->addColumn('created_at', 'datetime', ['null' => true])
             ->addColumn('updated_at', 'datetime', ['null' => true])

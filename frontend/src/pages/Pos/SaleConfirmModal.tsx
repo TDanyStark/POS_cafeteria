@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import type { Sale } from '@/types/sales'
 import { CheckCircle2, ShoppingBag } from 'lucide-react'
+import { formatCurrency } from '@/utils/format'
 
 interface SaleConfirmModalProps {
   sale: Sale | null
@@ -58,7 +59,7 @@ export function SaleConfirmModal({ sale, open, onClose }: SaleConfirmModalProps)
                 <span className="text-muted-foreground">
                   {item.product_name} × {item.quantity}
                 </span>
-                <span>${item.subtotal.toLocaleString()}</span>
+                <span>{formatCurrency(item.subtotal)}</span>
               </div>
             ))}
           </div>
@@ -67,13 +68,13 @@ export function SaleConfirmModal({ sale, open, onClose }: SaleConfirmModalProps)
 
           <div className="flex justify-between font-bold text-base">
             <span>Total</span>
-            <span className="text-primary">${sale.total.toLocaleString()}</span>
+            <span className="text-primary">{formatCurrency(sale.total)}</span>
           </div>
 
           {sale.payment_method === 'cash' && sale.change_amount > 0 && (
             <div className="flex justify-between text-sm font-medium text-green-600 dark:text-green-400">
               <span>Cambio</span>
-              <span>${sale.change_amount.toLocaleString()}</span>
+              <span>{formatCurrency(sale.change_amount)}</span>
             </div>
           )}
         </div>

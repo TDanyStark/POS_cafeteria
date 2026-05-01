@@ -147,10 +147,10 @@ class MySqlSaleRepository implements SaleRepositoryInterface
         int $cashRegisterId,
         int $userId,
         ?int $customerId,
-        float $total,
+        int $total,
         string $paymentMethod,
-        float $amountPaid,
-        float $changeAmount,
+        int $amountPaid,
+        int $changeAmount,
         ?string $notes
     ): int {
         $stmt = $this->pdo->prepare('
@@ -172,7 +172,7 @@ class MySqlSaleRepository implements SaleRepositoryInterface
         return (int) $this->pdo->lastInsertId();
     }
 
-    public function createItem(int $saleId, int $productId, int $quantity, float $unitPrice, float $subtotal): int
+    public function createItem(int $saleId, int $productId, int $quantity, int $unitPrice, int $subtotal): int
     {
         $stmt = $this->pdo->prepare('
             INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal, created_at, updated_at)

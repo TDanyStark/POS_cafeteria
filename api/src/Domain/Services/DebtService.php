@@ -28,7 +28,7 @@ class DebtService
         return $this->settings->get('cashRegisterScope') === 'global';
     }
 
-    public function createDebt(int $customerId, int $saleId, float $total, float $amountPaid): int
+    public function createDebt(int $customerId, int $saleId, int $total, int $amountPaid): int
     {
         $remainingAmount = $total - $amountPaid;
 
@@ -39,7 +39,7 @@ class DebtService
         return $this->debtRepository->create($customerId, $saleId, $total, $remainingAmount);
     }
 
-    public function addPayment(int $debtId, int $userId, float $amount, string $paymentMethod, ?string $notes = null): array
+    public function addPayment(int $debtId, int $userId, int $amount, string $paymentMethod, ?string $notes = null): array
     {
         $debt = $this->debtRepository->findById($debtId);
         if ($debt === null) {
@@ -54,8 +54,8 @@ class DebtService
             throw new \InvalidArgumentException('El monto del abono debe ser mayor a 0.');
         }
 
-        $newPaidAmount = (float) $debt['paid_amount'] + $amount;
-        $newRemainingAmount = (float) $debt['remaining_amount'] - $amount;
+        $newPaidAmount = (int) $debt['paid_amount'] + $amount;
+        $newRemainingAmount = (int) $debt['remaining_amount'] - $amount;
 
         if ($newRemainingAmount < 0) {
             throw new \InvalidArgumentException(
@@ -63,7 +63,7 @@ class DebtService
             );
         }
 
-        $newStatus = bccomp((string) $newRemainingAmount, '0', 2) <= 0 ? 'paid' : 'partial';
+        $newStatus = $newRemainingAmount <= 0 ? 'paid' : 'partial';
 
         // Require open cash register for all debt payments
         if ($this->isCashRegisterGlobalScope()) {

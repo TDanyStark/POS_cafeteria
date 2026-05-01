@@ -24,7 +24,7 @@ class AddDebtPaymentAction
             $debt = $this->debtService->addPayment(
                 $debtId,
                 (int) $user['id'],
-                (float) ($body['amount'] ?? 0),
+                (int) ($body['amount'] ?? 0),
                 $body['payment_method'] ?? 'cash',
                 $body['notes'] ?? null
             );

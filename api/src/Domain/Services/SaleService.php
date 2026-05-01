@@ -59,7 +59,7 @@ class SaleService
             throw new \InvalidArgumentException('El método de pago debe ser "cash" o "transfer".');
         }
 
-        $amountPaid = isset($data['amount_paid']) ? (float) $data['amount_paid'] : 0.0;
+        $amountPaid = isset($data['amount_paid']) ? (int) $data['amount_paid'] : 0;
         $createDebt = !empty($data['create_debt']);
 
         if ($amountPaid <= 0 && !$createDebt) {
@@ -83,7 +83,7 @@ class SaleService
 
         // Resolve and validate items
         $resolvedItems = [];
-        $total         = 0.0;
+        $total         = 0;
 
         foreach ($data['items'] as $item) {
             $productId = isset($item['product_id']) ? (int) $item['product_id'] : null;
@@ -105,7 +105,7 @@ class SaleService
                 );
             }
 
-            $unitPrice = (float) $product['price'];
+            $unitPrice = (int) $product['price'];
             $subtotal  = $unitPrice * $quantity;
             $total    += $subtotal;
 
@@ -130,7 +130,7 @@ class SaleService
             throw new \InvalidArgumentException('El monto pagado no puede ser negativo.');
         }
 
-        $changeAmount = $paymentMethod === 'cash' ? max(0.0, $amountPaid - $total) : 0.0;
+        $changeAmount = $paymentMethod === 'cash' ? max(0, $amountPaid - $total) : 0;
         $notes        = isset($data['notes']) ? trim((string) $data['notes']) : null;
 
         // Execute in a transaction
@@ -222,9 +222,9 @@ class SaleService
         if ($debt !== null) {
             $sale['debt'] = [
                 'id'               => (int) $debt['id'],
-                'original_amount'  => (float) $debt['original_amount'],
-                'paid_amount'      => (float) $debt['paid_amount'],
-                'remaining_amount' => (float) $debt['remaining_amount'],
+                'original_amount'  => (int) $debt['original_amount'],
+                'paid_amount'      => (int) $debt['paid_amount'],
+                'remaining_amount' => (int) $debt['remaining_amount'],
                 'status'           => $debt['status'],
             ];
         } else {

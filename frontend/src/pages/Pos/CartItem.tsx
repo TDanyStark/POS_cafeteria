@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input'
 import { useCartStore } from '@/stores/cartStore'
 import type { CartItem as CartItemType } from '@/types/sales'
 import { Minus, Plus, Trash2 } from 'lucide-react'
+import { formatCurrency } from '@/utils/format'
 
 interface CartItemProps {
   item: CartItemType
@@ -16,7 +17,7 @@ export function CartItemRow({ item }: CartItemProps) {
     <div className="flex items-center gap-2 py-2 border-b border-border last:border-0">
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{item.product_name}</p>
-        <p className="text-xs text-muted-foreground">${item.unit_price.toLocaleString()} c/u</p>
+        <p className="text-xs text-muted-foreground">{formatCurrency(item.unit_price)} c/u</p>
       </div>
 
       <div className="flex items-center gap-1">
@@ -48,7 +49,7 @@ export function CartItemRow({ item }: CartItemProps) {
       </div>
 
       <div className="w-20 text-right">
-        <p className="text-sm font-semibold">${item.subtotal.toLocaleString()}</p>
+        <p className="text-sm font-semibold">{formatCurrency(item.subtotal)}</p>
       </div>
 
       <Button

@@ -115,16 +115,16 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
         $register['cash_sales']      = $this->sumCashSales($id);
         $register['transfer_sales']  = $this->sumTransferSales($id);
 
-        $initialAmount = (float) $register['initial_amount'];
+        $initialAmount = (int) $register['initial_amount'];
         $register['expected_amount'] = $initialAmount
-            + (float) $register['manual_cash_in']
-            - (float) $register['manual_cash_out']
-            + (float) $register['cash_sales'];
+            + (int) $register['manual_cash_in']
+            - (int) $register['manual_cash_out']
+            + (int) $register['cash_sales'];
 
         return $register;
     }
 
-    public function create(int $userId, float $initialAmount): int
+    public function create(int $userId, int $initialAmount): int
     {
         $stmt = $this->pdo->prepare("
             INSERT INTO cash_registers (user_id, initial_amount, status, opened_at, created_at, updated_at)
@@ -137,7 +137,7 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
         return (int) $this->pdo->lastInsertId();
     }
 
-    public function close(int $id, int $closedByUserId, float $declaredAmount, float $finalAmount, float $difference): bool
+    public function close(int $id, int $closedByUserId, int $declaredAmount, int $finalAmount, int $difference): bool
     {
         $stmt = $this->pdo->prepare("
             UPDATE cash_registers
@@ -159,7 +159,7 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
         ]);
     }
 
-    public function addMovement(int $cashRegisterId, int $userId, string $type, float $amount, string $description): int
+    public function addMovement(int $cashRegisterId, int $userId, string $type, int $amount, string $description): int
     {
         $stmt = $this->pdo->prepare("
             INSERT INTO cash_movements (cash_register_id, user_id, type, amount, description, created_at, updated_at)
@@ -188,44 +188,44 @@ class MySqlCashRegisterRepository implements CashRegisterRepositoryInterface
         return $stmt->fetchAll();
     }
 
-    public function sumCashIn(int $cashRegisterId): float
+    public function sumCashIn(int $cashRegisterId): int
     {
         $stmt = $this->pdo->prepare("
             SELECT COALESCE(SUM(amount), 0) FROM cash_movements
             WHERE cash_register_id = :id AND type = 'in'
         ");
         $stmt->execute(['id' => $cashRegisterId]);
-        return (float) $stmt->fetchColumn();
+        return (int) $stmt->fetchColumn();
     }
 
-    public function sumCashOut(int $cashRegisterId): float
+    public function sumCashOut(int $cashRegisterId): int
     {
         $stmt = $this->pdo->prepare("
             SELECT COALESCE(SUM(amount), 0) FROM cash_movements
             WHERE cash_register_id = :id AND type = 'out'
         ");
         $stmt->execute(['id' => $cashRegisterId]);
-        return (float) $stmt->fetchColumn();
+        return (int) $stmt->fetchColumn();
     }
 
-    public function sumCashSales(int $cashRegisterId): float
+    public function sumCashSales(int $cashRegisterId): int
     {
         $stmt = $this->pdo->prepare("
-            SELECT COALESCE(SUM(LEAST(CAST(total AS DECIMAL(10,2)), CAST(amount_paid AS DECIMAL(10,2)))), 0) FROM sales
+            SELECT COALESCE(SUM(LEAST(total, amount_paid)), 0) FROM sales
             WHERE cash_register_id = :id AND payment_method = 'cash'
         ");
         $stmt->execute(['id' => $cashRegisterId]);
-        return (float) $stmt->fetchColumn();
+        return (int) $stmt->fetchColumn();
     }
 
-    public function sumTransferSales(int $cashRegisterId): float
+    public function sumTransferSales(int $cashRegisterId): int
     {
         $stmt = $this->pdo->prepare("
             SELECT COALESCE(SUM(total), 0) FROM sales
             WHERE cash_register_id = :id AND payment_method = 'transfer'
         ");
         $stmt->execute(['id' => $cashRegisterId]);
-        return (float) $stmt->fetchColumn();
+        return (int) $stmt->fetchColumn();
     }
 
 }

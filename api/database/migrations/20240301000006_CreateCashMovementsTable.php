@@ -12,7 +12,7 @@ final class CreateCashMovementsTable extends AbstractMigration
         $table->addColumn('cash_register_id', 'integer', ['signed' => false])
               ->addColumn('user_id', 'integer', ['signed' => false])
               ->addColumn('type', 'enum', ['values' => ['in', 'out']])
-              ->addColumn('amount', 'decimal', ['precision' => 12, 'scale' => 2])
+              ->addColumn('amount', 'biginteger', ['default' => 0])
               ->addColumn('description', 'string', ['limit' => 255])
               ->addColumn('created_at', 'timestamp', ['default' => 'CURRENT_TIMESTAMP'])
               ->addColumn('updated_at', 'timestamp', [

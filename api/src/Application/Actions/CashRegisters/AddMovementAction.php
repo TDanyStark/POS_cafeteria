@@ -25,7 +25,7 @@ class AddMovementAction
                 $registerId,
                 (int) $user['id'],
                 (string) ($body['type'] ?? ''),
-                (float) ($body['amount'] ?? 0),
+                (int) ($body['amount'] ?? 0),
                 (string) ($body['description'] ?? '')
             );
             $payload = ['success' => true, 'data' => $register];

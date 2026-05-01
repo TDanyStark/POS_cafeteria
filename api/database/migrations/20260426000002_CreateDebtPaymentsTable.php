@@ -13,7 +13,7 @@ final class CreateDebtPaymentsTable extends AbstractMigration
             ->addColumn('debt_id', 'integer', ['signed' => false, 'null' => false])
             ->addColumn('user_id', 'integer', ['signed' => false, 'null' => false])
             ->addColumn('cash_register_id', 'integer', ['signed' => false, 'null' => true])
-            ->addColumn('amount', 'decimal', ['precision' => 10, 'scale' => 2])
+            ->addColumn('amount', 'biginteger', ['default' => 0])
             ->addColumn('payment_method', 'enum', ['values' => ['cash', 'transfer']])
             ->addColumn('notes', 'text', ['null' => true, 'default' => null])
             ->addColumn('created_at', 'datetime', ['null' => true])

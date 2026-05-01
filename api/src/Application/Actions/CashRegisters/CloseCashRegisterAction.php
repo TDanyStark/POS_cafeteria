@@ -30,7 +30,7 @@ class CloseCashRegisterAction
             $register = $this->cashRegisterService->close(
                 $registerId,
                 (int) $user['id'],
-                (float) $body['declared_amount']
+                (int) $body['declared_amount']
             );
             $payload = ['success' => true, 'data' => $register];
             $status  = 200;

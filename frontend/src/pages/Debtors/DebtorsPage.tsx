@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { UserMinus, Search, DollarSign, CreditCard, Calendar, ArrowDownToLine } from 'lucide-react'
+import { formatCurrency } from '@/utils/format'
 
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -214,9 +215,9 @@ export function DebtorsPage() {
                       {new Date(debt.created_at).toLocaleDateString('es-CO')}
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium">${debt.original_amount.toLocaleString()}</TableCell>
-                  <TableCell className="text-green-600 dark:text-green-400">${debt.paid_amount.toLocaleString()}</TableCell>
-                  <TableCell className="font-medium text-destructive">${debt.remaining_amount.toLocaleString()}</TableCell>
+                   <TableCell className="font-medium">{formatCurrency(debt.original_amount)}</TableCell>
+                   <TableCell className="text-green-600 dark:text-green-400">{formatCurrency(debt.paid_amount)}</TableCell>
+                   <TableCell className="font-medium text-destructive">{formatCurrency(debt.remaining_amount)}</TableCell>
                   <TableCell><StatusBadge status={debt.status} /></TableCell>
                   <TableCell className="text-right">
                     {debt.remaining_amount > 0 && (
@@ -292,7 +293,7 @@ export function DebtorsPage() {
                 onChange={(e) => setPaymentAmount(Math.min(selectedDebtRemaining, Math.max(0, parseFloat(e.target.value) || 0)))}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Pendiente: ${selectedDebtRemaining.toLocaleString()}
+                Pendiente: {formatCurrency(selectedDebtRemaining)}
               </p>
             </div>
 

@@ -12,6 +12,7 @@ import { SaleConfirmModal } from './SaleConfirmModal'
 import type { Sale } from '@/types/sales'
 import { ShoppingCart, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatCurrency } from '@/utils/format'
 
 export function CartPanel() {
   const [lastSale, setLastSale] = useState<Sale | null>(null)
@@ -186,7 +187,7 @@ export function CartPanel() {
                     step="1000"
                     value={amountPaid || ''}
                     onChange={(e) => setAmountPaid(Math.min(total, Math.max(0, parseFloat(e.target.value) || 0)))}
-                    placeholder={createDebt ? `$0 - $${total.toLocaleString()}` : `Mínimo $${total.toLocaleString()}`}
+                    placeholder={createDebt ? `$0 - ${formatCurrency(total)}` : `Mínimo ${formatCurrency(total)}`}
                     className="h-9"
                   />
                 </div>
@@ -198,7 +199,7 @@ export function CartPanel() {
                   change >= 0 ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400'
                 }`}>
                   <span>Cambio</span>
-                  <span>${change.toLocaleString()}</span>
+                  <span>{formatCurrency(change)}</span>
                 </div>
               )}
 
@@ -206,7 +207,7 @@ export function CartPanel() {
               {createDebt && pendingDebt > 0 && (
                 <div className="flex justify-between text-sm font-medium rounded-lg px-3 py-2 bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
                   <span>Pendiente</span>
-                  <span>${pendingDebt.toLocaleString()}</span>
+                  <span>{formatCurrency(pendingDebt)}</span>
                 </div>
               )}
 
@@ -228,7 +229,7 @@ export function CartPanel() {
           <div className="px-4 py-3 border-t border-border space-y-3 bg-card">
             <div className="flex justify-between items-center text-lg font-bold">
               <span>Total</span>
-              <span className="text-primary">${total.toLocaleString()}</span>
+              <span className="text-primary">{formatCurrency(total)}</span>
             </div>
 
             <Button

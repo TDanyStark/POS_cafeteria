@@ -11,7 +11,7 @@ final class CreateProductsTable extends AbstractMigration
         $products = $this->table('products', ['id' => true, 'primary_key' => 'id']);
         $products->addColumn('category_id', 'integer', ['null' => false, 'signed' => false])
                  ->addColumn('name', 'string', ['limit' => 150])
-                 ->addColumn('price', 'decimal', ['precision' => 10, 'scale' => 2])
+                 ->addColumn('price', 'biginteger', ['signed' => false, 'default' => 0])
                  ->addColumn('stock', 'integer', ['default' => 0])
                  ->addColumn('min_stock', 'integer', ['default' => 5])
                  ->addColumn('active', 'boolean', ['default' => true])

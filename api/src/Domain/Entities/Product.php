@@ -10,7 +10,7 @@ class Product
         private int $id,
         private int $categoryId,
         private string $name,
-        private float $price,
+        private int $price,
         private int $stock,
         private int $minStock,
         private bool $active,
@@ -23,7 +23,7 @@ class Product
     public function getId(): int { return $this->id; }
     public function getCategoryId(): int { return $this->categoryId; }
     public function getName(): string { return $this->name; }
-    public function getPrice(): float { return $this->price; }
+    public function getPrice(): int { return $this->price; }
     public function getStock(): int { return $this->stock; }
     public function getMinStock(): int { return $this->minStock; }
     public function isActive(): bool { return $this->active; }

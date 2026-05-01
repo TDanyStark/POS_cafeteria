@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select'
 import { useProducts } from '@/hooks/useProducts'
 import { useCategories } from '@/hooks/useCategories'
+import { formatCurrency } from '@/utils/format'
 import { ProductFormModal } from './ProductFormModal'
 import { DeleteProductDialog } from './DeleteProductDialog'
 import { StockAdjustModal } from './StockAdjustModal'
@@ -72,9 +73,6 @@ export function ProductsPage() {
     setFormOpen(false)
     setEditTarget(null)
   }
-
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(price)
 
   const pagination = productsData?.pagination
 
@@ -182,7 +180,7 @@ export function ProductsPage() {
                     <TableCell className="text-muted-foreground">
                       {product.category_name}
                     </TableCell>
-                    <TableCell>{formatPrice(product.price)}</TableCell>
+                    <TableCell>{formatCurrency(product.price)}</TableCell>
                     <TableCell>
                       <Badge variant={isLowStock ? 'destructive' : 'secondary'}>
                         {product.stock}

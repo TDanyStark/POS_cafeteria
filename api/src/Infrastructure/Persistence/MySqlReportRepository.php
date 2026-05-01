@@ -145,15 +145,15 @@ class MySqlReportRepository implements ReportRepositoryInterface
         $byMethod = $stmt->fetchAll();
 
         $totalSales    = 0;
-        $totalCash     = 0.0;
-        $totalTransfer = 0.0;
+        $totalCash     = 0;
+        $totalTransfer = 0;
 
         foreach ($byMethod as $row) {
             $totalSales += (int) $row['total_sales'];
             if ($row['payment_method'] === 'cash') {
-                $totalCash = (float) $row['total_amount'];
+                $totalCash = (int) $row['total_amount'];
             } else {
-                $totalTransfer = (float) $row['total_amount'];
+                $totalTransfer = (int) $row['total_amount'];
             }
         }
 

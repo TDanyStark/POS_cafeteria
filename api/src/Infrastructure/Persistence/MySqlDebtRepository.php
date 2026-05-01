@@ -157,7 +157,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         return (int) $stmt->fetchColumn();
     }
 
-    public function create(int $customerId, int $saleId, float $originalAmount, float $remainingAmount): int
+    public function create(int $customerId, int $saleId, int $originalAmount, int $remainingAmount): int
     {
         $stmt = $this->pdo->prepare('
             INSERT INTO customer_debts
@@ -175,7 +175,7 @@ class MySqlDebtRepository implements DebtRepositoryInterface
         return (int) $this->pdo->lastInsertId();
     }
 
-    public function update(int $id, float $paidAmount, float $remainingAmount, string $status): void
+    public function update(int $id, int $paidAmount, int $remainingAmount, string $status): void
     {
         $stmt = $this->pdo->prepare('
             UPDATE customer_debts

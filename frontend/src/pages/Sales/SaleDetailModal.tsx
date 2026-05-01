@@ -64,7 +64,7 @@ export function SaleDetailModal({ saleId, onClose }: SaleDetailModalProps) {
                   <span className="text-muted-foreground">
                     {item.product_name} × {item.quantity}
                   </span>
-                  <span>${item.subtotal.toLocaleString()}</span>
+                   <span>{formatCurrency(item.subtotal)}</span>
                 </div>
               ))}
             </div>

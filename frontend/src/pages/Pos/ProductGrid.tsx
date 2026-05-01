@@ -8,6 +8,7 @@ import { useProducts } from '@/hooks/useProducts'
 import { useCartStore } from '@/stores/cartStore'
 import type { Product } from '@/types/catalog'
 import { Search } from 'lucide-react'
+import { formatCurrency } from '@/utils/format'
 
 export function ProductGrid() {
   const [search, setSearch] = useState('')
@@ -95,7 +96,7 @@ export function ProductGrid() {
                     {product.name}
                   </div>
                   <div className="text-primary font-bold text-base">
-                    ${product.price.toLocaleString()}
+                    {formatCurrency(product.price)}
                   </div>
                   <div className="mt-1">
                     {outOfStock ? (
