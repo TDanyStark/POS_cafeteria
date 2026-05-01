@@ -124,7 +124,9 @@ export function SalesPage() {
           <p className="text-xs font-medium text-muted-foreground">Método de pago</p>
           <Select value={(paymentMethod || 'all') as string} onValueChange={(v) => setParam('payment_method', v === 'all' ? '' : v)}>
             <SelectTrigger className="w-full sm:w-44 h-9">
-              <SelectValue placeholder="Todos" />
+              <SelectValue placeholder="Todos">
+                {(paymentMethod || 'all') === 'all' ? 'Todos' : paymentMethod === 'cash' ? 'Efectivo' : 'Transferencia'}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>

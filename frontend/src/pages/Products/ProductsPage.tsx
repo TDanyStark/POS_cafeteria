@@ -105,7 +105,11 @@ export function ProductsPage() {
           onValueChange={(v) => setParam('category_id', v === 'all' ? null : v)}
         >
           <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Todas las categorías" />
+            <SelectValue placeholder="Todas las categorías">
+              {categoryId
+                ? (categories?.data.find((c) => c.id === categoryId)?.name ?? 'Todas las categorías')
+                : 'Todas las categorías'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas las categorías</SelectItem>
@@ -122,7 +126,9 @@ export function ProductsPage() {
           onValueChange={(v) => setParam('active', v === 'all' ? null : v)}
         >
           <SelectTrigger className="w-full sm:w-36">
-            <SelectValue placeholder="Estado" />
+            <SelectValue placeholder="Estado">
+              {activeParam === '1' ? 'Activos' : activeParam === '0' ? 'Inactivos' : 'Todos'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>

@@ -88,7 +88,9 @@ export function UsersPage() {
 
         <Select value={activeParam ?? 'all'} onValueChange={(value) => setParam('active', value === 'all' ? null : value)}>
           <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Estado" />
+            <SelectValue placeholder="Estado">
+              {activeParam === '1' ? 'Activos' : activeParam === '0' ? 'Inactivos' : 'Todos'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
