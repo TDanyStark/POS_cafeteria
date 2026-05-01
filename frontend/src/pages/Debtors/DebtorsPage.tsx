@@ -108,7 +108,11 @@ export function DebtorsPage() {
       setPaymentMethod('cash')
       setPaymentNotes('')
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al registrar el abono'
+      const axiosErr = err as { response?: { data?: { error?: { description?: string }; message?: string } } }
+      const msg =
+        axiosErr?.response?.data?.error?.description ||
+        axiosErr?.response?.data?.message ||
+        (err instanceof Error ? err.message : 'Error al registrar el abono')
       toast.error(msg)
     }
   }
@@ -116,7 +120,7 @@ export function DebtorsPage() {
   const openPaymentModal = (debtId: number, remaining: number) => {
     setSelectedDebt(debtId)
     setSelectedDebtRemaining(remaining)
-    setPaymentAmount(remaining)
+    setPaymentAmount(Math.round(remaining))
   }
 
   return (
