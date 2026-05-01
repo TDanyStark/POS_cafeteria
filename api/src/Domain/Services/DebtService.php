@@ -36,7 +36,7 @@ class DebtService
             throw new \InvalidArgumentException('No hay deuda pendiente. El monto pagado es mayor o igual al total.');
         }
 
-        return $this->debtRepository->create($customerId, $saleId, $total, $amountPaid, $remainingAmount);
+        return $this->debtRepository->create($customerId, $saleId, $total, $remainingAmount);
     }
 
     public function addPayment(int $debtId, int $userId, int $amount, string $paymentMethod, ?string $notes = null): array
@@ -54,7 +54,7 @@ class DebtService
             throw new \InvalidArgumentException('El monto del abono debe ser mayor a 0.');
         }
 
-        $newPaidAmount = (int) $debt['paid_amount'] + $amount;
+        // remaining_amount from findById already includes s.amount_paid in the calculation
         $newRemainingAmount = (int) $debt['remaining_amount'] - $amount;
 
         if ($newRemainingAmount < 0) {
@@ -103,10 +103,17 @@ class DebtService
             );
         }
 
+        // Update: cd.paid_amount stores only post-sale payments (abonos posteriores)
+        // findById returns paid_amount = cd.paid_amount + s.amount_paid
+        // So cd.paid_amount = returned_paid_amount - s.amount_paid
+        $currentCdPaidAmount = (int) $debt['paid_amount'] - (int) $debt['amount_paid'];
+        $newCdPaidAmount = $currentCdPaidAmount + $amount;
+        $newCdRemainingAmount = (int) $debt['original_amount'] - (int) $debt['amount_paid'] - $newCdPaidAmount;
+
         $this->debtRepository->update(
             $debtId,
-            $newPaidAmount,
-            $newRemainingAmount,
+            $newCdPaidAmount,
+            $newCdRemainingAmount,
             $newStatus
         );
 

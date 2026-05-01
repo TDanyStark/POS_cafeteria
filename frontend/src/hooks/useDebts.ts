@@ -48,7 +48,7 @@ export function useAddDebtPayment() {
     onSuccess: (_, { debtId }) => {
       queryClient.invalidateQueries({ queryKey: ['debts'] })
       queryClient.invalidateQueries({ queryKey: ['debts', debtId] })
-      queryClient.invalidateQueries({ queryKey: ['cash-register'] })
+      queryClient.invalidateQueries({ queryKey: ['cashRegister'] })
     },
   })
 }

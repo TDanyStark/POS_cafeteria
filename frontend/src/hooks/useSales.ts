@@ -44,7 +44,7 @@ export function useCreateSale() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sales'] })
       queryClient.invalidateQueries({ queryKey: ['products'] })
-      queryClient.invalidateQueries({ queryKey: ['cash-register'] })
+      queryClient.invalidateQueries({ queryKey: ['cashRegister'] })
     },
   })
 }
